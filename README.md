@@ -1,4 +1,4 @@
-java_Diary
+Diary
 ==========
 
 Java Programming - Diary
