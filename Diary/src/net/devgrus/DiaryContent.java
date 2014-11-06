@@ -12,9 +12,9 @@ public class DiaryContent {
 	
 	
 	DiaryContent(){
-		this.title = null;
-		this.date = null;
-		this.content = null;
+		this.title = "";
+		this.date = "";
+		this.content = "";
 		this.tags = null;
 		this.files = null;
 	}
@@ -40,6 +40,62 @@ public class DiaryContent {
 		if(tags == null)
 				return false;
 		return true;
+	}
+	
+	public boolean isFiles(){
+		if(files == null)
+				return false;
+		return true;
+	}
+	
+	/**
+	 * @return Tags To String (Java, Study)
+	 */
+	public String getTags2String(){
+		String tag = "";
+		
+		if(isTags()){
+			for(int i=0 ; i < tags.length ; i++){
+				if(i != tags.length-1 ) tag = tag + tags[i] + ", ";
+				else tag += tags[i];
+			}
+			return tag;
+		}
+		return tag;
+	}
+	
+	/**
+	 * @return String To Tags ({"Java", "Study"})
+	 */
+	public String[] getString2Tags(String stringTags){
+		String arrTags[] = stringTags.split(",");
+		
+		return arrTags;
+	}
+	
+	/**
+	 * @return Files To String (Java, Study)
+	 */
+	public String getFiles2String(){
+		String file = "";
+		
+		if(isFiles()){
+			for(int i=0 ; i < files.length ; i++){
+				if(i != files.length-1 ) file = file + files[i] + ":";
+				else file += files[i];
+			}
+			return file;
+		}
+		return file;
+	}
+	
+	/**
+	 * @return String To Files ({"Java", "Study"})
+	 */
+	public String[] getString2Files(String stringFiles){
+		String arrFiles[] = stringFiles.split(":");
+		
+		return arrFiles;
 	}
 
 	/**

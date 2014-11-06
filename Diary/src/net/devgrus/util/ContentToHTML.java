@@ -31,11 +31,7 @@ public class ContentToHTML {
 		content = dContent.getContent();
 
 		if(dContent.isTags()){
-			tags = dContent.getTags();
-			for(int i=0 ; i < tags.length ; i++){
-				if(i != tags.length-1 ) tag = tag + tags[i] + ", ";
-				else tag += tags[i];
-			}
+			tag += dContent.getTags2String();
 		}
 		
 		if(dContent.isTags()){
@@ -52,8 +48,7 @@ public class ContentToHTML {
 					+ beforeDate + date + afterDate
 					+ beforeContent_Box + content + afterContent_Box
 					+ afterDiary_Entry+afterContent+footer;
-		}
-		
+		}		
 		return HTML;
 	}
 }

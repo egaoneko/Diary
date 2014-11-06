@@ -15,12 +15,15 @@ import javax.swing.text.html.StyleSheet;
 import net.devgrus.environment.AquaBarTabbedPaneUI;
 import net.devgrus.environment.EnvironmentVariables;
 import net.devgrus.util.ContentToHTML;
+import net.devgrus.util.ControlData;
 import net.devgrus.util.Date;
 import net.devgrus.util.OpenBrowser;
 import net.devgrus.util.ControlStyleSheet;
 
 import java.awt.SystemColor;
 import java.awt.Font;
+
+import org.jdatepicker.impl.*;
 
 /**
  * Created by SeoDong on 2014-10-30.
@@ -75,11 +78,15 @@ public class MainView extends JFrame {
 	
 	/* Text Area */
 	private JTextField editTxtTitle;	// Title TextField
-	private JTextField editTxtDate;		// Date TextField
-	private JButton editBtnDate;		// Date Button
 	private JScrollPane editTxtScrollPane;	// Text ScrollPane
-	private JTextPane eidtTxtArea;		// File Text Area
-	private JTextField editTagTxtField;		// Tag Text Field	
+	private JTextArea eidtTxtArea;		// Text Area
+	private JTextField editTagTxtField;	// Tag Text Field
+	private JPanel editDateJPanel;		// Date Panel
+	
+	/* Edit JDatePicker */
+	private UtilCalendarModel editModel;
+	private JDatePanelImpl editDatePanel;
+	private JDatePickerImpl editDatePicker;
 	
 	/* File Area */
 	private JScrollPane editFileScrollPane;	// File ScrollPane
@@ -98,23 +105,27 @@ public class MainView extends JFrame {
 	private JPanel newPane;				// New
 	
 	/* Text Area */
-	private JTextField newTxtTitle;	// Title TextField
-	private JTextField newTxtDate;		// Date TextField
-	private JButton newBtnDate;		// Date Button
+	private JTextField newTxtTitle;		// Title TextField
 	private JScrollPane newTxtScrollPane;	// Text ScrollPane
-	private JTextPane newTxtArea;		// File Text Area
-	private JTextField newTagTxtField;		// Tag Text Field	
+	private JTextArea newTxtArea;		//  Text Area
+	private JTextField newTagTxtField;	// Tag Text Field
+	private JPanel newJDatePanel;		// Date Panel
+	
+	/* new JDatePicker */
+	private UtilCalendarModel newModel;
+	private JDatePanelImpl newDatePanel;
+	private JDatePickerImpl newDatePicker;
 	
 	/* File Area */
 	private JScrollPane newFileScrollPane;	// File ScrollPane
 	private JTextPane newFileTxtArea;	// File Text Area
-	private JButton newBtnFile;		// Attached file
+	private JButton newBtnFile;			// Attached file
 
 	/* Button Area */
 	private JPanel newBtnControlPane;	// Button Control Pane
 	private JButton newBtnCancle;		// Cancle Button
 	private JButton newBtnPreview;		// Preview Button
-	private JButton newBtnSave;		// Save Button
+	private JButton newBtnSave;			// Save Button
 
 	/** 
 	 * List Pane
@@ -131,6 +142,11 @@ public class MainView extends JFrame {
 	 * Calendar
 	 */
 	private JPanel calPanel;			// Calendar Pane
+	
+	/* JDatePicker */
+	private UtilCalendarModel model;
+	private JDatePanelImpl datePanel;
+	private JDatePickerImpl datePicker;
 	
 	/**
 	 * Test Module
@@ -156,7 +172,7 @@ public class MainView extends JFrame {
 		 */
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		setBounds(100,100,1270,750);
+		setBounds(100,100,1350,750);
 		Dimension windowSize = this.getSize();
 		int windowX = Math.max(0, (screenSize.width  - windowSize.width ) / 2);
 		int windowY = Math.max(0, (screenSize.height - windowSize.height) / 2);
@@ -253,24 +269,31 @@ public class MainView extends JFrame {
 		editTxtTitle.setToolTipText("Title");
 		editTxtTitle.setColumns(10);
 		
-		editTxtDate = new JTextField();
-		editTxtDate.setHorizontalAlignment(SwingConstants.CENTER);
-		editTxtDate.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
-		editTxtDate.setToolTipText("Date");
-		editTxtDate.setColumns(10);
-		
-		editBtnDate = new JButton("Date");
-		editBtnDate.setToolTipText("Date");
-		
 		editTxtScrollPane = new JScrollPane();
-		eidtTxtArea = new JTextPane();
+		editTxtScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		eidtTxtArea = new JTextArea();
 		eidtTxtArea.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
 		editTxtScrollPane.setViewportView(eidtTxtArea);
+		eidtTxtArea.setLineWrap(true);
+		eidtTxtArea.setWrapStyleWord(true);
 		
 		editTagTxtField = new JTextField();
 		editTagTxtField.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
 		editTagTxtField.setToolTipText("Tag");
 		editTagTxtField.setColumns(10);
+		
+		editDateJPanel = new JPanel();
+		editDateJPanel.setBackground(SystemColor.controlHighlight);
+		
+		/* Edit JDatePicker */
+		editModel = new UtilCalendarModel();
+		editModel.setDate(Date.getYear(), Date.getMonth()-1, Date.getDay());
+		editModel.setSelected(true);
+		
+		editDatePanel = new JDatePanelImpl(editModel);
+		editDatePicker = new JDatePickerImpl(editDatePanel);
+		 
+		editDateJPanel.add(editDatePicker);
 		
 		/* File Area */
 		editFileScrollPane = new JScrollPane();
@@ -309,22 +332,29 @@ public class MainView extends JFrame {
 		newTxtTitle.setToolTipText("Title");
 		newTxtTitle.setColumns(10);
 		
-		newTxtDate = new JTextField();
-		newTxtDate.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
-		newTxtDate.setToolTipText("Date");
-		newTxtDate.setColumns(10);
-		
-		newBtnDate = new JButton("Date");
-		newBtnDate.setToolTipText("Date");
-		
 		newTxtScrollPane = new JScrollPane();
-		newTxtArea = new JTextPane();
+		newTxtArea = new JTextArea();
 		newTxtArea.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
 		newTxtScrollPane.setViewportView(newTxtArea);
+		newTxtArea.setLineWrap(true);
+		newTxtArea.setWrapStyleWord(true);
 		
 		newTagTxtField = new JTextField();
 		newTagTxtField.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
 		newTagTxtField.setColumns(10);
+		
+		newJDatePanel = new JPanel();
+		newJDatePanel.setBackground(SystemColor.controlHighlight);
+		
+		/* new JDatePicker */
+		newModel = new UtilCalendarModel();
+		newModel.setDate(Date.getYear(), Date.getMonth()-1, Date.getDay());
+		newModel.setSelected(true);
+		
+		newDatePanel = new JDatePanelImpl(newModel);
+		newDatePicker = new JDatePickerImpl(newDatePanel);
+		 
+		newJDatePanel.add(newDatePicker);
 		
 		/* File Area */
 		newFileScrollPane = new JScrollPane();
@@ -372,7 +402,6 @@ public class MainView extends JFrame {
 		btnSearch.setToolTipText("Search");
 		btnSearch.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
 		
-		
 		listCbBox1 = new JComboBox(EnvironmentVariables.cbBoxMenu);
 		listCbBox1.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
 		listCbBox2 = new JComboBox();
@@ -383,6 +412,16 @@ public class MainView extends JFrame {
 		 */
 		calPanel = new JPanel();
 		calPanel.setBackground(SystemColor.controlHighlight);
+		
+		/* JDatePicker */
+		model = new UtilCalendarModel();
+		model.setDate(Date.getYear(), Date.getMonth()-1, Date.getDay());
+		model.setSelected(true);
+		
+		datePanel = new JDatePanelImpl(model);
+		datePicker = new JDatePickerImpl(datePanel);
+		 
+		calPanel.add(datePicker);
 		
 		/**
 		 * HTML & CSS
@@ -396,6 +435,8 @@ public class MainView extends JFrame {
 		readTxtArea.setDocument(doc);
 		readTxtArea.setContentType("text/html");
 		readTxtArea.setText(ContentToHTML.getContentToHTML(testModule));
+		
+		ControlData.insertDataByClass(testModule);
 		
 		/* Add HyperLink */
 		readTxtArea.addHyperlinkListener(new HyperlinkListener() {
@@ -421,7 +462,7 @@ public class MainView extends JFrame {
 					.addContainerGap()
 					.addComponent(readScrollPane, GroupLayout.DEFAULT_SIZE, 721, Short.MAX_VALUE)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(readFileScrollPane, GroupLayout.PREFERRED_SIZE, 153, GroupLayout.PREFERRED_SIZE)
+					.addComponent(readFileScrollPane, GroupLayout.PREFERRED_SIZE, 225, GroupLayout.PREFERRED_SIZE)
 					.addContainerGap())
 		);
 		gl_readPane.setVerticalGroup(
@@ -444,30 +485,26 @@ public class MainView extends JFrame {
 				.addGroup(gl_editPane.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(gl_editPane.createParallelGroup(Alignment.LEADING)
-						.addComponent(editBtnControlPane, GroupLayout.DEFAULT_SIZE, 756, Short.MAX_VALUE)
-						.addComponent(editTxtScrollPane, GroupLayout.DEFAULT_SIZE, 756, Short.MAX_VALUE)
-						.addComponent(editTagTxtField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 756, Short.MAX_VALUE)
-						.addComponent(editTxtTitle, GroupLayout.DEFAULT_SIZE, 756, Short.MAX_VALUE))
+						.addComponent(editBtnControlPane, GroupLayout.DEFAULT_SIZE, 799, Short.MAX_VALUE)
+						.addComponent(editTxtScrollPane)
+						.addComponent(editTagTxtField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 799, Short.MAX_VALUE)
+						.addComponent(editTxtTitle, GroupLayout.DEFAULT_SIZE, 799, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(gl_editPane.createParallelGroup(Alignment.TRAILING)
-						.addComponent(editBtnFile, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 153, GroupLayout.PREFERRED_SIZE)
-						.addGroup(gl_editPane.createParallelGroup(Alignment.LEADING, false)
-							.addGroup(gl_editPane.createSequentialGroup()
-								.addComponent(editTxtDate, 0, 0, Short.MAX_VALUE)
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(editBtnDate, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE))
-							.addComponent(editFileScrollPane, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 153, GroupLayout.PREFERRED_SIZE)))
+					.addGroup(gl_editPane.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_editPane.createParallelGroup(Alignment.TRAILING)
+							.addComponent(editBtnFile, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 153, GroupLayout.PREFERRED_SIZE)
+							.addComponent(editFileScrollPane, GroupLayout.PREFERRED_SIZE, 208, GroupLayout.PREFERRED_SIZE))
+						.addComponent(editDateJPanel, GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE))
 					.addContainerGap())
 		);
 		gl_editPane.setVerticalGroup(
 			gl_editPane.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_editPane.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(gl_editPane.createParallelGroup(Alignment.BASELINE)
+					.addGroup(gl_editPane.createParallelGroup(Alignment.LEADING)
 						.addComponent(editTxtTitle, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
-						.addComponent(editBtnDate, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
-						.addComponent(editTxtDate, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE))
-					.addGap(10)
+						.addComponent(editDateJPanel, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_editPane.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_editPane.createSequentialGroup()
 							.addComponent(editTxtScrollPane, GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
@@ -492,36 +529,32 @@ public class MainView extends JFrame {
 				.addGroup(gl_newPane.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(gl_newPane.createParallelGroup(Alignment.LEADING)
-						.addComponent(newBtnControlPane, GroupLayout.DEFAULT_SIZE, 756, Short.MAX_VALUE)
-						.addComponent(newTxtScrollPane, GroupLayout.DEFAULT_SIZE, 756, Short.MAX_VALUE)
-						.addComponent(newTagTxtField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 756, Short.MAX_VALUE)
-						.addComponent(newTxtTitle, GroupLayout.DEFAULT_SIZE, 756, Short.MAX_VALUE))
+						.addComponent(newBtnControlPane, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
+						.addComponent(newTagTxtField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
+						.addComponent(newTxtTitle, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
+						.addComponent(newTxtScrollPane, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(gl_newPane.createParallelGroup(Alignment.TRAILING)
-						.addComponent(newBtnFile, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 153, GroupLayout.PREFERRED_SIZE)
-						.addGroup(gl_newPane.createParallelGroup(Alignment.LEADING, false)
-							.addGroup(gl_newPane.createSequentialGroup()
-								.addComponent(newTxtDate, 0, 0, Short.MAX_VALUE)
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(newBtnDate, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE))
-							.addComponent(newFileScrollPane, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 153, GroupLayout.PREFERRED_SIZE)))
+					.addGroup(gl_newPane.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_newPane.createParallelGroup(Alignment.TRAILING)
+							.addComponent(newBtnFile, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 153, GroupLayout.PREFERRED_SIZE)
+							.addComponent(newFileScrollPane, GroupLayout.PREFERRED_SIZE, 208, GroupLayout.PREFERRED_SIZE))
+						.addComponent(newJDatePanel, GroupLayout.PREFERRED_SIZE, 208, GroupLayout.PREFERRED_SIZE))
 					.addContainerGap())
 		);
 		gl_newPane.setVerticalGroup(
 			gl_newPane.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_newPane.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(gl_newPane.createParallelGroup(Alignment.BASELINE)
-						.addComponent(newTxtTitle, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
-						.addComponent(newBtnDate, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
-						.addComponent(newTxtDate, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE))
-					.addGap(10)
+					.addGroup(gl_newPane.createParallelGroup(Alignment.LEADING, false)
+						.addComponent(newJDatePanel, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE)
+						.addComponent(newTxtTitle, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_newPane.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_newPane.createSequentialGroup()
-							.addComponent(newTxtScrollPane, GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
+						.addGroup(Alignment.TRAILING, gl_newPane.createSequentialGroup()
+							.addComponent(newTxtScrollPane, GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
 							.addPreferredGap(ComponentPlacement.UNRELATED)
 							.addComponent(newTagTxtField, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE))
-						.addComponent(newFileScrollPane, GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE))
+						.addComponent(newFileScrollPane, GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_newPane.createParallelGroup(Alignment.LEADING, false)
 						.addComponent(newBtnControlPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -586,7 +619,7 @@ public class MainView extends JFrame {
 						.addGroup(groupLayout.createSequentialGroup()
 							.addComponent(listPane, GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)
 							.addGap(7)
-							.addComponent(calPanel, GroupLayout.PREFERRED_SIZE, 235, GroupLayout.PREFERRED_SIZE)))
+							.addComponent(calPanel, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE)))
 					.addContainerGap())
 		);	
 		getContentPane().setLayout(groupLayout);

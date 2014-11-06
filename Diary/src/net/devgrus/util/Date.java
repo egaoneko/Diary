@@ -59,4 +59,64 @@ public class Date {
 		String date = year+"-"+month+"-" +day+" "+ hour+":"+minute+":"+second; 		
 		return date;
 	}
+	
+	/**
+	 * @return Year(int)
+	 */
+	public static int getYear(){
+		Calendar call=Calendar.getInstance();
+		TimeZone tz = TimeZone.getTimeZone("GMT+09:00");
+		call.setTimeZone(tz);
+		return call.get(Calendar.YEAR);
+	}
+	
+	/**
+	 * @return Month(int)
+	 */
+	public static int getMonth(){
+		Calendar call=Calendar.getInstance();
+		TimeZone tz = TimeZone.getTimeZone("GMT+09:00");
+		call.setTimeZone(tz);
+		return call.get(Calendar.MONTH)+1;
+	}
+	
+	/**
+	 * @return Day(int)
+	 */
+	public static int getDay(){
+		Calendar call=Calendar.getInstance();
+		TimeZone tz = TimeZone.getTimeZone("GMT+09:00");
+		call.setTimeZone(tz);
+		return call.get(Calendar.DATE);
+	}
+	
+	/**
+	 * @return Hour(int)
+	 */
+	public static int getHour(){
+		Calendar call=Calendar.getInstance();
+		TimeZone tz = TimeZone.getTimeZone("GMT+09:00");
+		call.setTimeZone(tz);
+		return call.get(Calendar.HOUR);
+	}
+	
+	/**
+	 * @return Minute(int)
+	 */
+	public static int getMinute(){
+		Calendar call=Calendar.getInstance();
+		TimeZone tz = TimeZone.getTimeZone("GMT+09:00");
+		call.setTimeZone(tz);
+		return call.get(Calendar.MINUTE);
+	}
+	
+	/**
+	 * @return Second(int)
+	 */
+	public static int getSecond(){
+		Calendar call=Calendar.getInstance();
+		TimeZone tz = TimeZone.getTimeZone("GMT+09:00");
+		call.setTimeZone(tz);
+		return call.get(Calendar.SECOND);
+	}
 }
