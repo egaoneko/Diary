@@ -44,7 +44,7 @@ public class Preview extends JFrame {
 		/**
 		 * Main View UI ¼³Á¤
 		 */
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		setBounds(100,100,820,650);
 		Dimension windowSize = this.getSize();
