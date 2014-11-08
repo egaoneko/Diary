@@ -3,5 +3,6 @@
 	<classpathentry kind="src" path="Diary/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="C:/Workspace/Diary/Diary/src/lib/jdbc/sqlite-jdbc-3.8.7.jar"/>
+	<classpathentry kind="lib" path="C:/Workspace/Diary/Diary/src/lib/jdbc/mysql-connector-java-5.1.28-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

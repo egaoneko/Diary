@@ -1,4 +1,4 @@
-package net.devgrus.util;
+package net.devgrus.util.html;
 
 import javax.swing.text.html.StyleSheet;
 

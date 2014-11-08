@@ -1,6 +1,8 @@
 package net.devgrus;
 
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Toolkit;
 
 import javax.swing.*;
@@ -8,22 +10,40 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
 import net.devgrus.environment.AquaBarTabbedPaneUI;
 import net.devgrus.environment.EnvironmentVariables;
-import net.devgrus.util.ContentToHTML;
 import net.devgrus.util.ControlData;
 import net.devgrus.util.Date;
 import net.devgrus.util.OpenBrowser;
-import net.devgrus.util.ControlStyleSheet;
+import net.devgrus.util.Utils;
+import net.devgrus.util.html.ContentToHTML;
+import net.devgrus.util.html.ControlStyleSheet;
+import net.devgrus.util.jchooser.CustomFileView;
+import net.devgrus.util.jchooser.PreFileViewer;
+import net.devgrus.util.jlist.DiaryFileRenderer;
+import net.devgrus.util.popup.JListPopUp;
 
 import java.awt.SystemColor;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.Calendar;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 import org.jdatepicker.impl.*;
+
 
 /**
  * Created by SeoDong on 2014-10-30.
@@ -90,8 +110,13 @@ public class MainView extends JFrame {
 	
 	/* File Area */
 	private JScrollPane editFileScrollPane;	// File ScrollPane
-	private JTextPane eidtFileTxtArea;	// File Text Area
+	private JList<DiaryFile> editFileList;	// File List Area
 	private JButton editBtnFile;		// Attached file
+	private DefaultListModel<DiaryFile> editListModel;	// List Model
+	private Vector<DiaryFile> editVc = new Vector<>();	// File Vector
+	private JListPopUp editListMenu = new JListPopUp();	// List Mouse Click Menu
+	private String editOpenFilePath = "";	// Open File Path
+	private String editRemoveFilePath = "";	// Remove File Path
 
 	/* Button Area */
 	private JPanel editBtnControlPane;	// Button Control Pane
@@ -118,8 +143,13 @@ public class MainView extends JFrame {
 	
 	/* File Area */
 	private JScrollPane newFileScrollPane;	// File ScrollPane
-	private JTextPane newFileTxtArea;	// File Text Area
+	private JList<DiaryFile> newFileList;	// File List Area
 	private JButton newBtnFile;			// Attached file
+	private DefaultListModel<DiaryFile> newListModel;	// List Model
+	private Vector<DiaryFile> newVc = new Vector<>();	// File Vector
+	private JListPopUp newListMenu = new JListPopUp();	// List Mouse Click Menu
+	private String newOpenFilePath = "";	// Open File Path
+	private String newRemoveFilePath = "";	// Remove File Path
 
 	/* Button Area */
 	private JPanel newBtnControlPane;	// Button Control Pane
@@ -132,7 +162,7 @@ public class MainView extends JFrame {
 	 */
 	private JPanel listPane;			// List
 	private JScrollPane listScrollPane;	// List ScrollPane
-	private JList list;					// Diary List
+	private JList<String> list;			// Diary List
 	private JTextField searchTxtField;	// Search Field
 	private JButton btnSearch;			// Search Button
 	private JComboBox listCbBox1;		// List Combo Box1
@@ -151,16 +181,18 @@ public class MainView extends JFrame {
 	/**
 	 * Test Module
 	 */
-	private String title = "Hello, World!";
-	private String date = Date.getdateS();
-	private String content = "Every, Body! <a href=\"http://devgrus.net\">devgrus.net</a>";
-	private String[] tags = {"Java", "Study"};
-	private String[] files = null;
-	private DiaryContent testModule = new DiaryContent(title, date, content, tags, files);
+	private String testTitle = "Hello, World!";
+	private String testDate = Date.getdateS();
+	private String testContent = "Every, Body! <a href=\"http://devgrus.net\">devgrus.net</a>";
+	private String[] testTags = {"Java", "Study"};
+	private String[] testFiles = null;
+	private DiaryContent testModule = new DiaryContent(testTitle, testDate, testContent, testTags, testFiles);
 	
 	public MainView() {
 		setTitle("Diary");
 		init();
+		initEvent();
+		updateNewList();
 	}
 
 	/**
@@ -292,15 +324,18 @@ public class MainView extends JFrame {
 		
 		editDatePanel = new JDatePanelImpl(editModel);
 		editDatePicker = new JDatePickerImpl(editDatePanel);
+		editDatePanel.setPreferredSize(new java.awt.Dimension(200, 190));
 		 
 		editDateJPanel.add(editDatePicker);
 		
 		/* File Area */
 		editFileScrollPane = new JScrollPane();
-		eidtFileTxtArea = new JTextPane();
-		eidtFileTxtArea.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
-		eidtFileTxtArea.setEditable(false);
-		editFileScrollPane.setViewportView(eidtFileTxtArea);
+		editListModel = new DefaultListModel<>();
+		editFileList = new JList<> (editListModel);
+		editFileList.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
+		//eidtFileTxtArea.setEditable(false);
+		editFileScrollPane.setViewportView(editFileList);
+		editFileList.setCellRenderer(new DiaryFileRenderer());
 		
 		editBtnFile = new JButton("Attach a file");
 		editBtnFile.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 16));
@@ -353,15 +388,18 @@ public class MainView extends JFrame {
 		
 		newDatePanel = new JDatePanelImpl(newModel);
 		newDatePicker = new JDatePickerImpl(newDatePanel);
+		newDatePanel.setPreferredSize(new java.awt.Dimension(200, 190));
 		 
 		newJDatePanel.add(newDatePicker);
 		
 		/* File Area */
 		newFileScrollPane = new JScrollPane();
-		newFileTxtArea = new JTextPane();
-		newFileTxtArea.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
-		newFileTxtArea.setEditable(false);
-		newFileScrollPane.setViewportView(newFileTxtArea);
+		newListModel = new DefaultListModel<>();
+		newFileList = new JList<>(newListModel);
+		newFileList.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
+		//newFileTxtArea.setEditable(false);
+		newFileScrollPane.setViewportView(newFileList);
+		newFileList.setCellRenderer(new DiaryFileRenderer());
 		
 		newBtnFile = new JButton("Attach a file");
 		newBtnFile.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 16));
@@ -389,7 +427,7 @@ public class MainView extends JFrame {
 		 */
 		listPane = new JPanel();
 		listScrollPane = new JScrollPane();
-		list = new JList();
+		list = new JList<>();
 		list.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 13));
 		listScrollPane.setViewportView(list);
 		
@@ -418,8 +456,9 @@ public class MainView extends JFrame {
 		model.setDate(Date.getYear(), Date.getMonth()-1, Date.getDay());
 		model.setSelected(true);
 		
-		datePanel = new JDatePanelImpl(model);
+		datePanel = new JDatePanelImpl(model);	
 		datePicker = new JDatePickerImpl(datePanel);
+		datePanel.setPreferredSize(new java.awt.Dimension(200, 190));
 		 
 		calPanel.add(datePicker);
 		
@@ -435,8 +474,6 @@ public class MainView extends JFrame {
 		readTxtArea.setDocument(doc);
 		readTxtArea.setContentType("text/html");
 		readTxtArea.setText(ContentToHTML.getContentToHTML(testModule));
-		
-		ControlData.insertDataByClass(testModule);
 		
 		/* Add HyperLink */
 		readTxtArea.addHyperlinkListener(new HyperlinkListener() {
@@ -485,14 +522,14 @@ public class MainView extends JFrame {
 				.addGroup(gl_editPane.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(gl_editPane.createParallelGroup(Alignment.LEADING)
-						.addComponent(editBtnControlPane, GroupLayout.DEFAULT_SIZE, 799, Short.MAX_VALUE)
+						.addComponent(editBtnControlPane, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
 						.addComponent(editTxtScrollPane)
-						.addComponent(editTagTxtField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 799, Short.MAX_VALUE)
-						.addComponent(editTxtTitle, GroupLayout.DEFAULT_SIZE, 799, Short.MAX_VALUE))
+						.addComponent(editTagTxtField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
+						.addComponent(editTxtTitle, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_editPane.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_editPane.createParallelGroup(Alignment.TRAILING)
-							.addComponent(editBtnFile, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 153, GroupLayout.PREFERRED_SIZE)
+							.addComponent(editBtnFile, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 208, GroupLayout.PREFERRED_SIZE)
 							.addComponent(editFileScrollPane, GroupLayout.PREFERRED_SIZE, 208, GroupLayout.PREFERRED_SIZE))
 						.addComponent(editDateJPanel, GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE))
 					.addContainerGap())
@@ -529,14 +566,14 @@ public class MainView extends JFrame {
 				.addGroup(gl_newPane.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(gl_newPane.createParallelGroup(Alignment.LEADING)
-						.addComponent(newBtnControlPane, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
-						.addComponent(newTagTxtField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
-						.addComponent(newTxtTitle, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
-						.addComponent(newTxtScrollPane, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE))
+							.addComponent(newBtnControlPane, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
+							.addComponent(newTxtScrollPane)
+							.addComponent(newTagTxtField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
+							.addComponent(newTxtTitle, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_newPane.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_newPane.createParallelGroup(Alignment.TRAILING)
-							.addComponent(newBtnFile, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 153, GroupLayout.PREFERRED_SIZE)
+							.addComponent(newBtnFile, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 208, GroupLayout.PREFERRED_SIZE)
 							.addComponent(newFileScrollPane, GroupLayout.PREFERRED_SIZE, 208, GroupLayout.PREFERRED_SIZE))
 						.addComponent(newJDatePanel, GroupLayout.PREFERRED_SIZE, 208, GroupLayout.PREFERRED_SIZE))
 					.addContainerGap())
@@ -624,4 +661,445 @@ public class MainView extends JFrame {
 		);	
 		getContentPane().setLayout(groupLayout);
 	}
+	
+	/**
+	 * Add Event Method 
+	 */
+	public void initEvent() { 
+		
+		/*
+		 * New Tab Event Listener
+		 */
+		/* Text Area */
+		newBtnCancle.addActionListener(new newBtnCancleAction());		// Cancle Button
+		newBtnPreview.addActionListener(new newBtnPreviewAction());		// Preview Button
+		newBtnSave.addActionListener(new newBtnSaveAction());			// Save Button		
+		
+		/* File Area */
+		newBtnFile.addActionListener(new BtnFileAction());	// Attach a File
+		newFileList.addMouseMotionListener(new FileListMouseMotion());	// List MouseMotion Listener
+		newFileList.addMouseListener(new FileListMouse());	// List Mouse Listener
+		newListMenu.getOpenItem().addActionListener(new FileListOpenAction());	// List Right Click Open
+		newListMenu.getAddItem().addActionListener(new FileListAddAction());	// List Right Click Add
+		newListMenu.getRemoveItem().addActionListener(new FileListRemoveAction());	// List Right Click Remove
+		newListMenu.getRemoveAllItem().addActionListener(new FileListRemoveAllAction());	// List Right Click Remove All
+		
+		/*
+		 * New Tab Event Listener
+		 */
+		/* File Area */
+		editBtnFile.addActionListener(new BtnFileAction());	// Attach a File
+		editFileList.addMouseMotionListener(new FileListMouseMotion());	// List MouseMotion Listener
+		editFileList.addMouseListener(new FileListMouse());	// List Mouse Listener
+		editListMenu.getOpenItem().addActionListener(new FileListOpenAction());	// List Right Click Open
+		editListMenu.getAddItem().addActionListener(new FileListAddAction());	// List Right Click Add
+		editListMenu.getRemoveItem().addActionListener(new FileListRemoveAction());	// List Right Click Remove
+		editListMenu.getRemoveAllItem().addActionListener(new FileListRemoveAllAction());	// List Right Click Remove All
+	}
+	
+	public void updateNewList() {
+		String dataList[] = ControlData.getDiaryList();
+		list.setListData(dataList);
+	}
+	
+	/* Attach a File Event */
+	class BtnFileAction implements ActionListener
+	{
+		private JFileChooser chooser;
+		private PreFileViewer prf;
+		private CustomFileView fileView;
+		
+		BtnFileAction() {
+			chooser = new JFileChooser();
+			chooser.setMultiSelectionEnabled(true);	//	Choose Multi
+			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			chooser.setDragEnabled(true);
+			
+			/* preview image */
+			prf = new PreFileViewer(chooser);
+			chooser.setAccessory(prf);
+			chooser.addPropertyChangeListener(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY, prf);
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == newBtnFile || e.getSource() == editBtnFile) 
+			{
+				String fileName = "";
+				String filePath = "";
+
+				/* Add FileFilter */
+				chooser.addChoosableFileFilter(new FileNameExtensionFilter("Images", "jpg", "jpeg", "png", "gif", "bmp"));
+				chooser.addChoosableFileFilter(new FileNameExtensionFilter("Audios", "mp3", "ogg", "wav"));
+				chooser.addChoosableFileFilter(new FileNameExtensionFilter("Documents", "doc", "xls", "ppt", "rtf", "docx", "xlsx", "pptx", "pdf"));
+				chooser.addChoosableFileFilter(new FileNameExtensionFilter("Zips", "zip", "rar", "tar", "7z", "gz", "bz2"));
+				
+				/* FileView */
+				fileView = new CustomFileView();
+		        fileView.setIcons();
+		        chooser.setFileView(fileView);
+				
+				int ret = chooser.showOpenDialog(null);
+				if(ret != JFileChooser.APPROVE_OPTION) {
+					JOptionPane.showMessageDialog(null, "User cancelled operation. No file was chosen.","Warning",JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+				
+				for(int i=0;i<chooser.getSelectedFiles().length;i++){
+					filePath = chooser.getSelectedFiles()[i].getPath();
+					fileName = Utils.getFileName(filePath);
+					
+					/* Check Same File */
+					if(e.getSource() == newBtnFile){
+						if(isSameFile(fileName, newListModel)) return;
+					}
+					else{
+						if(isSameFile(fileName, editListModel)) return;
+					}
+					
+					/* Add diaryFile */
+					DiaryFile diaryFile = new DiaryFile(fileName, filePath);
+					
+					if(e.getSource() == newBtnFile){
+						newListModel.addElement(diaryFile);		// To List
+						newVc.add(diaryFile);					// To Vector
+					} else {
+						editListModel.addElement(diaryFile);	// To List
+						editVc.add(diaryFile);					// To Vector
+					}
+				}
+			}
+		}
+		
+		private boolean isSameFile(String fileName, DefaultListModel<DiaryFile> listModel){
+			
+			for(int i=0; i<listModel.getSize(); i++){
+				if(listModel.getElementAt(i).getFileName().equals(fileName)) return true;
+			}	
+			return false;
+		}
+	}
+	
+	/* JList Tool Tip */
+	class FileListMouseMotion implements MouseMotionListener {
+		@Override
+        public void mouseMoved(MouseEvent e) {
+			JList<DiaryFile> source = (JList<DiaryFile>) e.getSource();
+            ListModel<DiaryFile> m = source.getModel();
+            int index = source.locationToIndex(e.getPoint());
+            if (index > -1) {
+            	String extension = Utils.getFileExtension(m.getElementAt(index).getFilePath());
+
+        		if (extension.equals("jpg") || extension.equals("jpeg") || extension.equals("gif") || extension.equals("png")) {
+	            	source.setToolTipText(String.format("<html><body><img src='file:\\%s'></body></html>", 
+	            			m.getElementAt(index).getFilePath()));
+        		} else {
+        			source.setToolTipText(m.getElementAt(index).toString());
+        		}
+            }
+        }
+
+		@Override
+		public void mouseDragged(MouseEvent e) {		
+		}
+	}
+	
+	/* List Right Click Pop Up */
+	class FileListMouse implements MouseListener {
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			if (e.isPopupTrigger())
+	            doPop(e);
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			if (e.isPopupTrigger()){
+	            doPop(e);
+			}
+		}
+		
+		private void doPop(MouseEvent e){
+			
+			JList<DiaryFile> source = (JList<DiaryFile>) e.getSource();
+            ListModel<DiaryFile> m = source.getModel();
+            int index = source.locationToIndex(e.getPoint());
+            if (index > -1) {
+            	
+            	if(e.getSource() == newFileList){
+            		newRemoveFilePath = m.getElementAt(index).getFilePath();
+            		newOpenFilePath = m.getElementAt(index).getFilePath();
+            		newListMenu.setEnabledItem(true);
+            		newListMenu.show(e.getComponent(), e.getX(), e.getY());            		
+            	}
+            	else {
+            		editRemoveFilePath = m.getElementAt(index).getFilePath();
+            		editOpenFilePath = m.getElementAt(index).getFilePath();
+            		editListMenu.setEnabledItem(true);
+            		editListMenu.show(e.getComponent(), e.getX(), e.getY());
+            	}
+            } else {
+            	if(e.getSource() == newFileList){
+            		newRemoveFilePath = "";
+            		newOpenFilePath = "";
+            		newListMenu.setEnabledItem(false);
+            		newListMenu.show(e.getComponent(), e.getX(), e.getY());            		
+            	}
+            	else {
+            		editRemoveFilePath = "";
+            		editListMenu.setEnabledItem(false);
+            		editOpenFilePath = "";
+            		editListMenu.show(e.getComponent(), e.getX(), e.getY());
+            	}
+            }
+	    }	
+	}
+	
+	/* List Right Click Add */
+	class FileListAddAction implements ActionListener {
+		private JFileChooser chooser;
+		private PreFileViewer prf;
+		private CustomFileView fileView;
+		
+		FileListAddAction() {
+			chooser = new JFileChooser();
+			chooser.setMultiSelectionEnabled(true);	//	Choose Multi
+			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			chooser.setDragEnabled(true);
+			
+			/* preview image */
+			prf = new PreFileViewer(chooser);
+			chooser.setAccessory(prf);
+			chooser.addPropertyChangeListener(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY, prf);
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == newListMenu.getAddItem() || e.getSource() == editListMenu.getAddItem() ) 
+			{
+				String fileName = "";
+				String filePath = "";
+
+				/* Add FileFilter */
+				chooser.addChoosableFileFilter(new FileNameExtensionFilter("Images", "jpg", "jpeg", "png", "gif", "bmp"));
+				chooser.addChoosableFileFilter(new FileNameExtensionFilter("Audios", "mp3", "ogg", "wav"));
+				chooser.addChoosableFileFilter(new FileNameExtensionFilter("Documents", "doc", "xls", "ppt", "rtf", "docx", "xlsx", "pptx", "pdf"));
+				chooser.addChoosableFileFilter(new FileNameExtensionFilter("Zips", "zip", "rar", "tar", "7z", "gz", "bz2"));
+				
+				/* FileView */
+				fileView = new CustomFileView();
+		        fileView.setIcons();
+		        chooser.setFileView(fileView);
+				
+				int ret = chooser.showOpenDialog(null);
+				if(ret != JFileChooser.APPROVE_OPTION) {
+					JOptionPane.showMessageDialog(null, "User cancelled operation. No file was chosen.","Warning",JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+				
+				for(int i=0;i<chooser.getSelectedFiles().length;i++){
+					filePath = chooser.getSelectedFiles()[i].getPath();
+					fileName = Utils.getFileName(filePath);
+					
+					/* Check Same File */
+					if(e.getSource() == newListMenu.getAddItem()){
+						if(isSameFile(fileName, newListModel)) return;
+					}
+					else{
+						if(isSameFile(fileName, editListModel)) return;
+					}
+					
+					/* Add diaryFile */
+					DiaryFile diaryFile = new DiaryFile(fileName, filePath);
+					
+					if(e.getSource() == newListMenu.getAddItem()){
+						newListModel.addElement(diaryFile);		// To List
+						newVc.add(diaryFile);					// To Vector
+					} else {
+						editListModel.addElement(diaryFile);	// To List
+						editVc.add(diaryFile);					// To Vector
+					}
+				}
+			}	
+		}
+		
+		private boolean isSameFile(String fileName, DefaultListModel<DiaryFile> listModel){
+			
+			for(int i=0; i<listModel.getSize(); i++){
+				if(listModel.getElementAt(i).getFileName().equals(fileName)){
+					return true;
+				}
+			}	
+			return false;
+		}		
+	}
+
+	/* List Right Click Remove */
+	class FileListRemoveAction implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			if(e.getSource() == newListMenu.getRemoveItem()){
+				if(!newRemoveFilePath.equals("")){
+					removeList(Utils.getFileName(newRemoveFilePath), newListModel, newVc);
+					if(newOpenFilePath.equals(newRemoveFilePath)){
+						newOpenFilePath = "";
+					}
+					newRemoveFilePath = "";
+				}
+			}
+			else{
+				if(!editRemoveFilePath.equals("")){
+					removeList(Utils.getFileName(editRemoveFilePath), editListModel, editVc);
+					if(editOpenFilePath.equals(editRemoveFilePath)){
+						editOpenFilePath = "";
+					}
+					editRemoveFilePath = "";
+				}
+			}	
+		}
+		
+		private void removeList(String fileName, DefaultListModel<DiaryFile> listModel, Vector<DiaryFile> vc){
+			
+			for(int i=0; i<listModel.getSize(); i++){
+				if(listModel.getElementAt(i).getFileName().equals(fileName)){
+					listModel.removeElementAt(i);
+					break;
+				}
+			}
+			
+			for(DiaryFile i : vc){
+				if(i.getFileName().equals(fileName)){
+					vc.removeElement(i);
+					break;
+				}
+			}
+		}
+	}
+
+	/* List Right Click Remove All */
+	class FileListRemoveAllAction implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+
+			if (e.getSource() == newListMenu.getRemoveAllItem()) {
+				removeAllList(newListModel, newVc);
+				newOpenFilePath = "";
+				newRemoveFilePath = "";
+			} else {
+				removeAllList(editListModel, editVc);
+				editOpenFilePath = "";
+				editRemoveFilePath = "";
+			}
+		}
+
+		private void removeAllList(DefaultListModel<DiaryFile> listModel, Vector<DiaryFile> vc) {
+			listModel.removeAllElements();
+			vc.removeAllElements();		
+		}
+	}
+	
+	/* List Right Click Open */
+	class FileListOpenAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == newListMenu.getOpenItem()) {
+				Utils.fileExecute(newOpenFilePath);
+				newOpenFilePath = "";
+			} else {
+				Utils.fileExecute(editOpenFilePath);
+				editOpenFilePath = "";
+			}
+		}
+		
+	}
+	
+	/* Cancle Button */
+	class newBtnCancleAction implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			newTxtTitle.setText("");
+			newTxtArea.setText("");
+			newTagTxtField.setText("");
+			newModel.setDate(Date.getYear(), Date.getMonth()-1, Date.getDay());
+			newListModel.removeAllElements();
+			newVc.removeAllElements();	
+		}	
+	}
+	
+	/* Preview Button */
+	class newBtnPreviewAction implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			Calendar selectedValue = (Calendar) newDatePicker.getModel().getValue();
+			
+			String title = newTxtTitle.getText();
+			String date = Date.getdateS(selectedValue);
+			String content = newTxtArea.getText();
+			String[] tags = newTagTxtField.getText().replace(", ", ",").split(",");;
+			String[] files = new String[newVc.size()];
+			
+			for(int i=0; i<newVc.size(); i++){
+				files[i] = newVc.get(i).getFileName();
+			}
+			
+			DiaryContent diary = new DiaryContent(title, date, content, tags, files);
+			
+			Preview prv = new Preview(diary);
+		}
+		
+	}
+	
+	/* Save Button */
+	class newBtnSaveAction implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			Calendar selectedValue = (Calendar) newDatePicker.getModel().getValue();
+			
+			String title = newTxtTitle.getText();
+			String date = Date.getdateS(selectedValue);
+			String content = newTxtArea.getText();
+			String[] tags = newTagTxtField.getText().replace(", ", ",").split(",");;
+			String[] files = new String[newVc.size()];
+			
+			for(int i=0; i<newVc.size(); i++){
+				files[i] = newVc.get(i).getFileName();
+			}
+			
+			DiaryContent diary = new DiaryContent(title, date, content, tags, files);
+			
+			ControlData.insertDataByClass(diary);
+			ControlData.insertFile(date, newVc);
+			
+			newTxtTitle.setText("");
+			newTxtArea.setText("");
+			newTagTxtField.setText("");
+			newModel.setDate(Date.getYear(), Date.getMonth()-1, Date.getDay());
+			newListModel.removeAllElements();
+			newVc.removeAllElements();
+			updateNewList();
+		}
+		
+	}
+	
 }

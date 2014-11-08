@@ -65,6 +65,22 @@ public class DiaryContent {
 	}
 	
 	/**
+	 * @return Tags To String (Java, Study)
+	 */
+	public String getTags2StringNoSpace(){
+		String tag = "";
+		
+		if(isTags()){
+			for(int i=0 ; i < tags.length ; i++){
+				if(i != tags.length-1 ) tag = tag + tags[i] + ",";
+				else tag += tags[i];
+			}
+			return tag;
+		}
+		return tag;
+	}
+	
+	/**
 	 * @return String To Tags ({"Java", "Study"})
 	 */
 	public String[] getString2Tags(String stringTags){
@@ -106,7 +122,7 @@ public class DiaryContent {
 	}
 
 	/**
-	 * @param title 설정할 title
+	 * @param title set title
 	 */
 	public void setTitle(String title) {
 		this.title = title;
@@ -120,7 +136,7 @@ public class DiaryContent {
 	}
 
 	/**
-	 * @param date 설정할 date
+	 * @param date set date
 	 */
 	public void setDate(String date) {
 		this.date = date;
@@ -134,7 +150,7 @@ public class DiaryContent {
 	}
 
 	/**
-	 * @param content 설정할 content
+	 * @param content set content
 	 */
 	public void setContent(String content) {
 		this.content = content;
@@ -148,7 +164,7 @@ public class DiaryContent {
 	}
 
 	/**
-	 * @param tags 설정할 tags
+	 * @param tags set tags
 	 */
 	public void setTags(String[] tags) {
 		this.tags = tags;
@@ -162,7 +178,7 @@ public class DiaryContent {
 	}
 
 	/**
-	 * @param files 설정할 files
+	 * @param files set files
 	 */
 	public void setFiles(String[] files) {
 		this.files = files;

@@ -1,7 +1,11 @@
-package net.devgrus.util;
+package net.devgrus.util.html;
 
 import net.devgrus.DiaryContent;
+import net.devgrus.util.Date;
 
+/**
+ * Created by SeoDong on 2014-10-31.
+ */
 public class ContentToHTML {
 
 	private static String header = 			"<!DOCTYPE html><html><body>";
