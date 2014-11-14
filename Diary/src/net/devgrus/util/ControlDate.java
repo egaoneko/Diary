@@ -6,7 +6,14 @@ import java.util.TimeZone;
 /**
  * Created by SeoDong on 2014-10-31.
  */
-public class Date {
+public class ControlDate {
+	
+	private static String dateChanger(int date){
+		if(date < 10){
+			return "0"+date;
+		}
+		return ""+date;
+	}
 	
 	/**
 	 * @return Date by Calendar Class 
@@ -19,7 +26,7 @@ public class Date {
 	}
 	
 	/**
-	 * @return Date by String Class (1960:01:01:00:00:00)
+	 * @return Date by String Class (1960-01-01 00:00:00)
 	 */
 	public static String getdateS(){
 		Calendar call=Calendar.getInstance();
@@ -32,10 +39,13 @@ public class Date {
 		int hour = call.get(Calendar.HOUR);
 		int minute = call.get(Calendar.MINUTE);
 		int second = call.get(Calendar.SECOND);
-		String date = year+":"+month+":" +day+":"+ hour+":"+minute+":"+second; 		
+		String date = year+"-"+dateChanger(month)+"-" +dateChanger(day)+" "+ dateChanger(hour)+":"+dateChanger(minute)+":"+dateChanger(second); 		
 		return date;
 	}
 	
+	/**
+	 * @return Date by String Class (1960-01-01 00:00:00)
+	 */
 	public static String getdateS(Calendar rCall){
 		Calendar call=Calendar.getInstance();
 		TimeZone tz = TimeZone.getTimeZone("GMT+09:00");
@@ -48,28 +58,26 @@ public class Date {
 		int hour = call.get(Calendar.HOUR);
 		int minute = call.get(Calendar.MINUTE);
 		int second = call.get(Calendar.SECOND);
-		String date = year+":"+month+":" +day+":"+ hour+":"+minute+":"+second; 		
-		return date;
-	}
-	
-	/**
-	 * @return Date by String <String to String> (1960-01-01 00:00:00)
-	 */
-	public static String getdateStoS(String rCall){
-		String[] call = rCall.split(":");
 		
-		String date = call[0]+"-"+call[1]+"-" +call[2]+" "+ call[3]+":"+call[4]+":"+call[5]; 		
+		String date = year+"-"+dateChanger(month)+"-" +dateChanger(day)+" "+ dateChanger(hour)+":"+dateChanger(minute)+":"+dateChanger(second);	
 		return date;
 	}
 	
 	/**
 	 * @return Date by String <String to String> (1960-01-01)
 	 */
-	public static String getdateStoSS(String rCall){
-		String[] call = rCall.split(":");
+	public static String getdateStoS(String rCall){
+		String[] call = rCall.split(" ");
 		
-		String date = call[0]+"-"+call[1]+"-" +call[2]; 		
+		String date = call[0];		
 		return date;
+	}
+	
+	/**
+	 * @return Date by String <String to String> (1960-01-01 000000)
+	 */
+	public static String convertdateStoS(String rCall){
+		return rCall.replaceAll(":", "");
 	}
 	
 	/**
@@ -87,7 +95,8 @@ public class Date {
 		int hour = call.get(Calendar.HOUR);
 		int minute = call.get(Calendar.MINUTE);
 		int second = call.get(Calendar.SECOND);
-		String date = year+"-"+month+"-" +day+" "+ hour+":"+minute+":"+second; 		
+		
+		String date = year+"-"+dateChanger(month)+"-" +dateChanger(day)+" "+ dateChanger(hour)+":"+dateChanger(minute)+":"+dateChanger(second);	
 		return date;
 	}
 	

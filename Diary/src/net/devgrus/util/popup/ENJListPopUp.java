@@ -3,13 +3,16 @@ package net.devgrus.util.popup;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-public class JListPopUp extends JPopupMenu {
+/**
+ * Created by SeoDong on 2014-11-07.
+ */
+public class ENJListPopUp extends JPopupMenu {
 	private JMenuItem openItem;
 	private JMenuItem addItem;
     private JMenuItem removeItem;
     private JMenuItem removeAllItem;
     
-    public JListPopUp(){
+    public ENJListPopUp(){
     	openItem = new JMenuItem("Open");
         add(openItem);
         openItem.setEnabled(false);

@@ -13,6 +13,7 @@ import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
+import net.devgrus.environment.EnvironmentVariables;
 import net.devgrus.util.OpenBrowser;
 import net.devgrus.util.html.ContentToHTML;
 import net.devgrus.util.html.ControlStyleSheet;
@@ -57,7 +58,7 @@ public class Preview extends JFrame {
 		 */
 		txtScrollPane = new JScrollPane();
 		txtArea = new JTextPane();
-		txtArea.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
+		txtArea.setFont(new Font(EnvironmentVariables.defaultFont, Font.BOLD, 15));
 		txtArea.setEditable(false);
 		kit = new HTMLEditorKit();	// Add HTMLEditor
 		txtArea.setEditorKit(kit);

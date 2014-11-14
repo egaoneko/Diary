@@ -1,5 +1,7 @@
 package net.devgrus;
 
+import net.devgrus.util.ControlDate;
+
 /**
  * Created by SeoDong on 2014-10-31.
  */
@@ -11,7 +13,7 @@ public class DiaryContent {
 	private String[] files;
 	
 	
-	DiaryContent(){
+	public DiaryContent(){
 		this.title = "";
 		this.date = "";
 		this.content = "";
@@ -19,7 +21,7 @@ public class DiaryContent {
 		this.files = null;
 	}
 	
-	DiaryContent(String title, String date, String content){
+	public DiaryContent(String title, String date, String content){
 		this.title = title;
 		this.date = date;
 		this.content = content;
@@ -28,13 +30,19 @@ public class DiaryContent {
 		
 	}
 	
-	DiaryContent(String title, String date, String content, String[] tags, String[] files){
+	public DiaryContent(String title, String date, String content, String[] tags, String[] files){
 		this.title = title;
 		this.date = date;
 		this.content = content;
 		this.tags = tags;
 		this.files = files;
 	}
+	
+	@Override
+	public String toString() {
+		return title + " - " + ControlDate.getdateStoS(date);
+	}
+	
 	
 	public boolean isTags(){
 		if(tags == null)

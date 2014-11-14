@@ -4,7 +4,7 @@ package net.devgrus.environment;
  * Created by SeoDong on 2014-10-31.
  */
 public class EnvironmentVariables {
-	public static final String[] cbBoxMenu = {"The New", "Tags", "Year", "Month"};
+	public static final String[] cbBoxMenu = {"The New", "Tags", "Year"};
 	public static final String[] fileIcons = {
 		"7z","asm","bash","bz2","c","cc","conf","cpp","cs","csh","css",
 		"csv","deb","diff","doc","docx","file","gif","gz","h","hpp","htm",
@@ -33,5 +33,7 @@ public class EnvironmentVariables {
 		"xls.png","xlsx.png","xml.png","zip.png"
 	};
 	public static final String icons32Path = "/net/devgrus/resource/images/fileicons/size32/";
-	public static final String icons16Path = "/net/devgrus/resource/images/fileicons/size16/";	
+	public static final String icons16Path = "/net/devgrus/resource/images/fileicons/size16/";
+	
+	public static final String defaultFont = "¸¼Àº °íµñ";
 }

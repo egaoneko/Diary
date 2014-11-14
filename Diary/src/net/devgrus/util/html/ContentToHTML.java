@@ -1,7 +1,7 @@
 package net.devgrus.util.html;
 
 import net.devgrus.DiaryContent;
-import net.devgrus.util.Date;
+import net.devgrus.util.ControlDate;
 
 /**
  * Created by SeoDong on 2014-10-31.
@@ -30,8 +30,9 @@ public class ContentToHTML {
 	
 	public static String getContentToHTML(DiaryContent dContent){
 		String HTML="";
+		tag = "Tag : ";
 		title = dContent.getTitle();
-		date = Date.getdateStoS(dContent.getDate());
+		date = dContent.getDate();
 		content = dContent.getContent();
 
 		if(dContent.isTags()){
