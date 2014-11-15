@@ -54,8 +54,13 @@ public class ControlData {
             		+ ");");
             stat.executeUpdate("create table if not exists diary_tag ("
             		+ "id integer primary key autoincrement, "
-            		+ "diary_id text not null, "
-            		+ "tag_id text not null"
+            		+ "diary_id integer not null, "
+            		+ "tag_id integer not null"
+            		+ ");");
+            stat.executeUpdate("create table if not exists year ("
+            		+ "id integer primary key autoincrement, "
+            		+ "diary_year integer not null, "
+            		+ "diary_id integer not null"
             		+ ");");
         } catch(Exception e) { e.printStackTrace(); }
     }
@@ -68,13 +73,14 @@ public class ControlData {
 	 * @param tags
 	 * @param files
 	 */
-	public static void insertDataByString(String title, String date, String content, String tags, String files) {
+	public static boolean insertDataByString(String title, String date, String content, String tags, String files) {
 		String sql = "insert into diary ( title, date, content, tags, files) values (?, ?, ?, ?, ?)";
 		String sql2 = "select * from diary where date = ? ";
 		String sql3 = "select count(*) from tag where title = ? ";
 		String sql4 = "insert into tag ( title ) values ( ? ) ";
 		String sql5 = "select * from tag where title = ? ";
 		String sql6 = "insert into diary_tag ( diary_id, tag_id ) values ( ?, ? ) ";
+		String sql7 = "insert into year ( diary_year, diary_id ) values ( ?, ? ) ";
 		
 		Connection conn = null;
 		PreparedStatement psmt = null;
@@ -82,6 +88,7 @@ public class ControlData {
 		
 		int count = -1;
 		int diary_id;
+		boolean success = true;
 		
 		String[] arrTags = tags.split(",");
 		
@@ -140,8 +147,10 @@ public class ControlData {
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			success = false;
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+			success = false;
 		}
 		finally {
 			if (conn != null) {
@@ -152,19 +161,21 @@ public class ControlData {
 				}
 			}
 		}
+		return success;
 	}
 	
 	/**
 	 * Insert Data By Class
 	 * @param diary
 	 */
-	public static void insertDataByClass(DiaryContent diary) {
+	public static boolean insertDataByClass(DiaryContent diary) {
 		String sql = "insert into diary ( title, date, content, tags, files) values (?, ?, ?, ?, ?)";
 		String sql2 = "select * from diary where date = ? ";
 		String sql3 = "select count(*) from tag where title = ? ";
 		String sql4 = "insert into tag ( title ) values ( ? ) ";
 		String sql5 = "select * from tag where title = ? ";
 		String sql6 = "insert into diary_tag ( diary_id, tag_id ) values ( ?, ? ) ";
+		String sql7 = "insert into year ( diary_year, diary_id ) values ( ?, ? ) ";
 		
 		Connection conn = null;
 		PreparedStatement psmt = null;
@@ -172,6 +183,7 @@ public class ControlData {
 		
 		int count = -1;
 		int diary_id;
+		boolean success = true;
 		
 		Vector<DiaryTag> vc = new Vector<>();
 		
@@ -192,6 +204,11 @@ public class ControlData {
 			rs = psmt.executeQuery();
 			rs.next();
 			diary_id = rs.getInt("id");
+			
+			psmt = conn.prepareStatement(sql7);
+			psmt.setInt(1, ControlDate.getyearStoS(diary.getDate()));
+			psmt.setInt(2, diary_id);
+			psmt.executeUpdate();
 			
 			for (int i=0; i<diary.getTags().length; i++){
 				psmt = conn.prepareStatement(sql3);
@@ -227,8 +244,10 @@ public class ControlData {
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			success = false;
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+			success = false;
 		}
 		finally {
 			if (conn != null) {
@@ -239,6 +258,7 @@ public class ControlData {
 				}
 			}	
 		}
+		return success;
 	}
 	
 	/**
@@ -246,15 +266,18 @@ public class ControlData {
 	 * @param date
 	 * @param fileVc
 	 */
-	public static void insertFile(String date, Vector<DiaryFile> fileVc) {
+	public static boolean insertFile(String date, Vector<DiaryFile> fileVc) {
 		String sql = "insert into file ( date, filename, filedata) values (?, ?, ?)";
+		
 		Connection conn = null;
 		PreparedStatement psmt = null;
 		FileInputStream fis = null;
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] buf = new byte[1024];
+        
+		byte[] buf = new byte[1024];
         byte[] image = null;
         int check = 0;
+        boolean success = true;
 		
 		try {
 			Class.forName("org.sqlite.JDBC");
@@ -290,10 +313,13 @@ public class ControlData {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			success = false;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			success = false;
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+			success = false;
 		}
 		finally {
 			if (conn != null) {
@@ -311,6 +337,7 @@ public class ControlData {
 				}
 			}
 		}
+		return success;
 	}
 	
 	/**
@@ -318,11 +345,14 @@ public class ControlData {
 	 * @param date
 	 * @param fileVc
 	 */
-	public static void insertFileMysql(String date, Vector<DiaryFile> fileVc) {
+	public static boolean insertFileMysql(String date, Vector<DiaryFile> fileVc) {
 		String sql = "insert into file ( date, filename, filedata) values (?, ?, ?)";
+		
 		Connection conn = null;
 		PreparedStatement psmt = null;
 		FileInputStream fis = null;
+		
+		boolean success = true;
 		
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -338,10 +368,13 @@ public class ControlData {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			success = false;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			success = false;
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+			success = false;
 		}
 		finally {
 			if (conn != null) {
@@ -359,6 +392,7 @@ public class ControlData {
 				}
 			}
 		}
+		return success;
 	}
 	
 	/**
@@ -602,11 +636,11 @@ public class ControlData {
 	}
 	
 	/**
-	 * Get Diary_ID From Tag
+	 * Get Diary_ID By Tag
 	 * @param tag
 	 * @return
 	 */
-	public static int[] getDiaryIDFromTag(String tag) {
+	public static int[] getDiaryIDByTag(String tag) {
 		String sql = "select * from tag where title = ?";
 		String sql2 = "select count(*) from diary_tag where tag_id = ?";
 		String sql3 = "select * from diary_tag where tag_id = ?";
@@ -685,6 +719,147 @@ public class ControlData {
 				psmt.setInt(1, diary_id[i]);
 				rs = psmt.executeQuery();
 				rs.next();
+				DiaryContent diary = new DiaryContent(rs.getString("title"), rs.getString("date"), rs.getString("content"), rs.getString("tags").replace(", ", ",").split(","), rs.getString("files").replace(", ", ",").split(":"));
+				vc.add(diary);	
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return vc;
+	}
+	
+	/**
+	 * Get Diary Year
+	 * @return
+	 */
+	public static String[] getDiaryYear() {
+		String sql = "select DISTINCT diary_year from year order by diary_year DESC ";
+		String sql2 = "select count(DISTINCT diary_year) from year";
+		String data[]=null;
+		int i = 0;
+		int count = 0;
+
+		Connection conn = null;
+		Statement smt = null;
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			// create a database connection
+			conn = DriverManager.getConnection("jdbc:sqlite:"+DATABASE);
+			smt = conn.createStatement();
+			
+			ResultSet rs = smt.executeQuery(sql2);			
+			while (rs.next()){
+				  count = rs.getInt(1);
+			}
+			data=new String[count];
+
+			rs = smt.executeQuery(sql);			
+			while(rs.next()){
+				data[i] = rs.getString("diary_year");
+				i++;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return data;
+	}
+	
+	/**
+	 * Get Diary_ID By Tag
+	 * @param tag
+	 * @return
+	 */
+	public static int[] getDiaryIDByYear(String year) {
+		String sql = "select count(*) from year where diary_year = ?";
+		String sql2 = "select * from year where diary_year = ?";
+		
+		int i = 0;
+		int count = 0;
+		int[] diary_id=null;
+
+		Connection conn = null;
+		PreparedStatement psmt = null;
+
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			// create a database connection
+			conn = DriverManager.getConnection("jdbc:sqlite:"+DATABASE);	
+			
+			psmt = conn.prepareStatement(sql);
+			psmt.setInt(1, Integer.parseInt(year));
+			ResultSet rs = psmt.executeQuery();
+			
+			while (rs.next()){
+				  count = rs.getInt(1);
+			}
+			
+			diary_id = new int[count];
+			
+			psmt = conn.prepareStatement(sql2);
+			psmt.setInt(1, Integer.parseInt(year));
+			rs = psmt.executeQuery();
+	
+			while(rs.next()){				
+				diary_id[i++] = rs.getInt("diary_id");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return diary_id;
+	}
+	
+	/**
+	 * Get Data for Read
+	 * @return
+	 */
+	public static Vector<DiaryContent> getDiaryRead(Vector<DiaryContent> vc, String search) {
+		String sql = "SELECT * FROM diary WHERE title LIKE '%"+search+"%' or content Like '%"+search+"%' order by date DESC";
+
+		Connection conn = null;
+		Statement smt = null;
+		ResultSet rs;
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			// create a database connection
+			conn = DriverManager.getConnection("jdbc:sqlite:"+DATABASE);			
+			
+			smt = conn.createStatement();		
+			rs = smt.executeQuery(sql);
+			
+			while (rs.next()){
 				DiaryContent diary = new DiaryContent(rs.getString("title"), rs.getString("date"), rs.getString("content"), rs.getString("tags").replace(", ", ",").split(","), rs.getString("files").replace(", ", ",").split(":"));
 				vc.add(diary);	
 			}

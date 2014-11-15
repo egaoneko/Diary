@@ -31,6 +31,8 @@ import java.awt.SystemColor;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -627,29 +629,29 @@ public class MainView extends JFrame {
 		 */
 		GroupLayout gl_listPane = new GroupLayout(listPane);
 		gl_listPane.setHorizontalGroup(
-			gl_listPane.createParallelGroup(Alignment.TRAILING)
+			gl_listPane.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_listPane.createSequentialGroup()
 					.addComponent(searchTxtField, GroupLayout.PREFERRED_SIZE, 170, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(btnSearch))
-				.addGroup(Alignment.LEADING, gl_listPane.createSequentialGroup()
+				.addGroup(gl_listPane.createSequentialGroup()
 					.addComponent(listCbBox1, GroupLayout.PREFERRED_SIZE, 126, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(listCbBox2, 0, 115, Short.MAX_VALUE))
-				.addComponent(listScrollPane, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 248, Short.MAX_VALUE)
+				.addComponent(listScrollPane, GroupLayout.DEFAULT_SIZE, 248, Short.MAX_VALUE)
 		);
 		gl_listPane.setVerticalGroup(
 			gl_listPane.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_listPane.createSequentialGroup()
 					.addGroup(gl_listPane.createParallelGroup(Alignment.BASELINE)
-						.addComponent(searchTxtField, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE)
+						.addComponent(searchTxtField, GroupLayout.PREFERRED_SIZE, 29, GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnSearch, GroupLayout.PREFERRED_SIZE, 29, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_listPane.createParallelGroup(Alignment.BASELINE)
 						.addComponent(listCbBox1, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
 						.addComponent(listCbBox2, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addComponent(listScrollPane, GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE))
+					.addComponent(listScrollPane, GroupLayout.DEFAULT_SIZE, 559, Short.MAX_VALUE))
 		);
 		listPane.setLayout(gl_listPane);
 		
@@ -727,8 +729,12 @@ public class MainView extends JFrame {
 		listCbBox1.addActionListener(new CbBox1Action());	// Combo Box1 Listener
 		listCbBox2.addActionListener(new CbBox2Action());	// Combo Box2 Listener
 		
+		/* Search Event Listener */
+		btnSearch.addActionListener(new SearchBtnAction());	// Search Button Listener
+		searchTxtField.addKeyListener(new SearchTxtKey());	// Search TextField Listener
+		
 		/*
-		 * List Pane Event Listener
+		 * Read Pane Event Listener
 		 */
 		readFileList.addMouseMotionListener(new FileListMouseMotion());	// List MouseMotion Listener
 		readFileList.addMouseListener(new ReadFileListMouse());	// List Mouse Listener
@@ -763,10 +769,21 @@ public class MainView extends JFrame {
 		list.setListData(arr);
 	}
 	
-	/* Update New List */
-	private void updateTagList(int[] diary_id) {
+	/* Update List By ID */
+	private void updateListByID(int[] diary_id) {
 		vc.removeAllElements();
 		vc = ControlData.getDiaryRead(vc, diary_id);	
+		
+		DiaryContent[] arr = new DiaryContent[vc.size()];
+		arr = (DiaryContent[])vc.toArray(arr);
+		
+		list.setListData(arr);
+	}
+	
+	/* Update List By Search */
+	private void updateListBySearch(String search) {
+		vc.removeAllElements();
+		vc = ControlData.getDiaryRead(vc, search);	
 		
 		DiaryContent[] arr = new DiaryContent[vc.size()];
 		arr = (DiaryContent[])vc.toArray(arr);
@@ -1177,6 +1194,9 @@ public class MainView extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			
+			boolean boolDiary = true;
+			boolean boolFile = true;
+			
 			Calendar selectedValue = (Calendar) newDatePicker.getModel().getValue();
 			
 			String title = newTxtTitle.getText();
@@ -1191,8 +1211,10 @@ public class MainView extends JFrame {
 			
 			DiaryContent diary = new DiaryContent(title, date, content, tags, files);
 			
-			ControlData.insertDataByClass(diary);
-			ControlData.insertFile(date, newVc);
+			boolDiary = ControlData.insertDataByClass(diary);
+			
+			if(boolDiary)
+				boolFile = ControlData.insertFile(date, newVc);
 			
 			newTxtTitle.setText("");
 			newTxtArea.setText("");
@@ -1201,6 +1223,16 @@ public class MainView extends JFrame {
 			newListModel.removeAllElements();
 			newVc.removeAllElements();
 			updateNewList();
+			
+			if(!boolDiary) {
+				JOptionPane.showMessageDialog(null, "Occurrence of error when you save a diary.","Warning",JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			else if(!boolFile) {
+				JOptionPane.showMessageDialog(null, "Occurrence of error when you save a fo;e.","Warning",JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			
 		}
 	}
 	
@@ -1293,12 +1325,15 @@ public class MainView extends JFrame {
 	    }	
 	}
 	
-	class CbBox1Action  implements ActionListener {
+	/* CbBox1 Action Listener */
+	class CbBox1Action implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			JComboBox<String> cb = (JComboBox<String>) e.getSource();
-
+			listCbBox2.removeAllItems();
+			searchTxtField.setText("");
+			
 			if(cb.getSelectedItem().equals("The New")){
 				updateNewList();
 				
@@ -1312,7 +1347,10 @@ public class MainView extends JFrame {
 					listCbBox2.addItem(tags[i]);
 			}
 			else if(cb.getSelectedItem().equals("Year")){
+				String[] years = ControlData.getDiaryYear();
 				
+				for(int i=0; i<years.length; i++)
+					listCbBox2.addItem(years[i]);
 			}
 			else {
 				updateNewList();
@@ -1321,7 +1359,8 @@ public class MainView extends JFrame {
 		}
 	}
 	
-	class CbBox2Action  implements ActionListener {
+	/* CbBox2 Action Listener */
+	class CbBox2Action implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -1330,11 +1369,12 @@ public class MainView extends JFrame {
 			
 			if(cb.getItemCount() != 0){
 				if(listCbBox1.getSelectedItem().equals("Tags")){
-					int[] diary_id = ControlData.getDiaryIDFromTag((String)cb.getSelectedItem());
-					updateTagList(diary_id);				
+					int[] diary_id = ControlData.getDiaryIDByTag((String)cb.getSelectedItem());
+					updateListByID(diary_id);				
 				}
-				else if(cb.getSelectedItem().equals("Year")){
-					
+				else if(listCbBox1.getSelectedItem().equals("Year")){
+					int[] diary_id = ControlData.getDiaryIDByYear((String)cb.getSelectedItem());
+					updateListByID(diary_id);
 				}
 				else {
 					updateNewList();
@@ -1344,4 +1384,32 @@ public class MainView extends JFrame {
 		}
 	}
 	
+	/* Search Button Action Listener */
+	class SearchBtnAction implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			updateListBySearch(searchTxtField.getText());
+		}
+	}
+	
+	/* Search Text Field Key Listener */
+	class SearchTxtKey implements KeyListener {
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			if(e.getKeyCode() == KeyEvent.VK_ENTER){
+				updateListBySearch(searchTxtField.getText());
+			}
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {			
+		}
+
+		@Override
+		public void keyTyped(KeyEvent e) {			
+		}
+		
+	}
 }

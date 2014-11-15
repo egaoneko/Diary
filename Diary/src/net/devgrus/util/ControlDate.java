@@ -74,6 +74,16 @@ public class ControlDate {
 	}
 	
 	/**
+	 * @return Year by String <String to String> (1960)
+	 */
+	public static int getyearStoS(String rCall){
+		String[] call = rCall.split("-");
+		
+		String date = call[0];		
+		return Integer.parseInt(date);
+	}
+	
+	/**
 	 * @return Date by String <String to String> (1960-01-01 000000)
 	 */
 	public static String convertdateStoS(String rCall){
