@@ -27,6 +27,7 @@ or implied, of Juan Heyns.
 */
 package org.jdatepicker.impl;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -50,6 +51,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+
+import net.devgrus.MainView;
 
 import org.jdatepicker.*;
 import org.jdatepicker.constraints.DateSelectionConstraint;
@@ -85,6 +88,9 @@ public class JDatePanelImpl extends JPanel implements JDatePanel {
 	private InternalCalendarModel internalModel;
 	private InternalController internalController;
 	private InternalView internalView;
+	
+	/* Custom By SeoDong */
+	private MainView mainview = null;
 
     public JDatePanelImpl() {
         this(new DefaultComponentFactory().createModel());
@@ -106,6 +112,32 @@ public class JDatePanelImpl extends JPanel implements JDatePanel {
 		
 		setLayout(new GridLayout(1, 1));
 		add(internalView);
+	}
+	
+	/* Custom By SeoDong */
+	public JDatePanelImpl(DateModel<?> model, MainView mainview) {
+		actionListeners = new HashSet<ActionListener>();
+		dateConstraints = new HashSet<DateSelectionConstraint>();
+
+		this.formatter = new DateComponentFormatter(ComponentManager.getInstance().getComponentFormatDefaults().getTodayDateFormat());
+		
+		showYearButtons = false;
+		doubleClickAction = false;
+		firstDayOfWeek = Calendar.getInstance().getFirstDayOfWeek();
+		
+		internalModel = new InternalCalendarModel(model);
+		internalController = new InternalController();
+		internalView = new InternalView();
+		
+		setLayout(new GridLayout(1, 1));
+		add(internalView);
+		
+		this.mainview = mainview;
+	}
+	
+	/* Custom By SeoDong */
+	public MainView getMainView(){
+		return mainview;
 	}
 	
 	public void addActionListener(ActionListener actionListener) {
@@ -659,7 +691,7 @@ public class JDatePanelImpl extends JPanel implements JDatePanel {
                 calForDay.set(internalModel.getModel().getYear(), internalModel.getModel().getMonth(), cellDayValue);
                 DateModel modelForDay = new UtilCalendarModel(calForDay);
                 label.setBackground(checkConstraints(modelForDay) ? getColors().bgGrid() : getColors().bgGridNotSelectable());
-				
+      
 				//Today
 				if (todayCal.get(Calendar.DATE) == cellDayValue
 						&& todayCal.get(Calendar.MONTH) == internalModel.getModel().getMonth()
@@ -679,8 +711,19 @@ public class JDatePanelImpl extends JPanel implements JDatePanel {
 						label.setBackground(getColors().bgGridSelected());
 					}
 				}
-			}
+				
+				/* Custom By SeoDong */
+				if(mainview != null){					
+	                String date = internalModel.getModel().getYear()+"-"+(internalModel.getModel().getMonth()+1);
+	                int[] arr = mainview.updateListByCalendarDays(date);
 
+	                for(int i=0; i<arr.length; i++){                	
+	                	if ( arr[i] == cellDayValue ){
+	    					label.setForeground(Color.MAGENTA);
+	    				}
+	                }
+				}
+			}
 			return label;
 		}
 
@@ -735,6 +778,11 @@ public class JDatePanelImpl extends JPanel implements JDatePanel {
 			else if (arg0.getSource() == internalView.getTodayLabel()) {
 				Calendar today = Calendar.getInstance();
 				internalModel.getModel().setDate(today.get(Calendar.YEAR), today.get(Calendar.MONTH), today.get(Calendar.DATE));
+				/* Custom By SeoDong */
+				if(mainview != null) {
+					String date = internalModel.getModel().getYear()+"-"+(internalModel.getModel().getMonth()+1)+"-"+internalModel.getModel().getDay();
+					mainview.updateListByCalendar(date);
+				}
 			} 
 			else if (arg0.getSource() == internalView.getDayTable()) {
 				int row = internalView.getDayTable().getSelectedRow();
@@ -760,16 +808,22 @@ public class JDatePanelImpl extends JPanel implements JDatePanel {
 						fireActionPerformed();
 					}
 				}
+				/* Custom By SeoDong */
+				if(mainview != null) {
+					String date = internalModel.getModel().getYear()+"-"+(internalModel.getModel().getMonth()+1)+"-"+internalModel.getModel().getDay();
+					mainview.updateListByCalendar(date);
+				}
 			}
 			else if (arg0.getSource() == internalView.getNoneLabel()) {
 				internalModel.getModel().setSelected(false);
-				
+
 				if (doubleClickAction && arg0.getClickCount() == 2) {
 					fireActionPerformed();
 				}
 				if (!doubleClickAction) {
 					fireActionPerformed();
 				}
+				mainview.updateListByCalendarClear();
 			}
 		}
 		

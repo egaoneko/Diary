@@ -39,6 +39,8 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import net.devgrus.MainView;
+
 import org.jdatepicker.*;
 import org.jdatepicker.constraints.DateSelectionConstraint;
 
@@ -68,6 +70,9 @@ public class JDatePickerImpl extends JPanel implements JDatePicker {
     public JDatePickerImpl() {
         this(new JDatePanelImpl());
     }
+    
+    /* Custom By SeoDong */
+    private MainView mainview;
 
 	/**
 	 * You are able to set the format of the date being displayed on the label.
@@ -99,6 +104,35 @@ public class JDatePickerImpl extends JPanel implements JDatePicker {
         layout.putConstraint(SpringLayout.WEST, formattedTextField, 0, SpringLayout.WEST, this);
         layout.putConstraint(SpringLayout.SOUTH, this, 0, SpringLayout.SOUTH, formattedTextField);
 
+        /* Custom By SeoDong */
+        mainview = datePanel.getMainView();
+        formattedTextField.addMouseListener(new MouseListener(){
+
+			@Override
+			public void mouseClicked(MouseEvent arg0) {		
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent arg0) {
+			}
+
+			@Override
+			public void mouseExited(MouseEvent arg0) {
+			}
+
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				if(mainview != null) {
+					mainview.updateListByCalendar(formattedTextField.getText().replace(". ", "-"));
+				}
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent arg0) {	
+			}
+        	
+        });
+        
 		//Add and Configure Button
 		button = new JButton();
 		button.setFocusable(true);

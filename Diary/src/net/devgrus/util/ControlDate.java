@@ -169,4 +169,11 @@ public class ControlDate {
 		call.setTimeZone(tz);
 		return call.get(Calendar.SECOND);
 	}
+	
+	/**
+	 * @return Date(int) (0:Year, 1:Month, 2: Date, 3:Hour, 4:Minute, 5:Second)
+	 */
+	public static int getdateForSettingCalender(String rCall, int index){
+		return Integer.parseInt(rCall.replaceAll(":", "-").replaceAll(" ", "-").split("-")[index]);
+	}
 }

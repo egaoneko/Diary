@@ -66,8 +66,7 @@ public class Utils {
 		}
 	}
 	
-	public static void exitDiary(){
-		
+	public static void exitDiary(){		
 		File folder = new File(".cache");
 		Utils.removeDIR(folder.getPath());
 		folder.delete();

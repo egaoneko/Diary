@@ -25,6 +25,7 @@ import net.devgrus.util.jchooser.CustomFileView;
 import net.devgrus.util.jchooser.PreFileViewer;
 import net.devgrus.util.jlist.DiaryFileRenderer;
 import net.devgrus.util.popup.ENJListPopUp;
+import net.devgrus.util.popup.LJListPopUp;
 import net.devgrus.util.popup.RJListPopUp;
 
 import java.awt.SystemColor;
@@ -40,6 +41,9 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.TimeZone;
 import java.util.Vector;
 
 import org.jdatepicker.impl.*;
@@ -87,6 +91,7 @@ public class MainView extends JFrame {
 	private JScrollPane readFileScrollPane;	// File ScrollPane
 	private JList<DiaryFile> readFileList;	// File Text Area
 	private DefaultListModel<DiaryFile> readListModel;	// List Model
+	private Vector<DiaryFile> readVc = new Vector<>();	// File Vector
 	private RJListPopUp readListMenu = new RJListPopUp();	// List Mouse Click Menu
 	private String readOpenFilePath = "";		// Open File Path
 	
@@ -102,9 +107,11 @@ public class MainView extends JFrame {
 	/* Text Area */
 	private JTextField editTxtTitle;	// Title TextField
 	private JScrollPane editTxtScrollPane;	// Text ScrollPane
-	private JTextArea eidtTxtArea;		// Text Area
-	private JTextField editTagTxtField;	// Tag Text Field
+	private JTextArea editTxtArea;		// Text Area
+	private JTextField editTxtTag;	// Tag Text Field
 	private JPanel editDateJPanel;		// Date Panel
+	private String editCurrentDate = "";// Edit Current Date
+	private int editDiary_Id = 0;		// Edit diary_id
 	
 	/* Edit JDatePicker */
 	private UtilCalendarModel editModel;
@@ -117,6 +124,7 @@ public class MainView extends JFrame {
 	private JButton editBtnFile;		// Attached file
 	private DefaultListModel<DiaryFile> editListModel;	// List Model
 	private Vector<DiaryFile> editVc = new Vector<>();	// File Vector
+	private Vector<DiaryFile> removedFileVc = new Vector<>();	// Removed File
 	private ENJListPopUp editListMenu = new ENJListPopUp();	// List Mouse Click Menu
 	private String editOpenFilePath = "";	// Open File Path
 	private String editRemoveFilePath = "";	// Remove File Path
@@ -136,7 +144,7 @@ public class MainView extends JFrame {
 	private JTextField newTxtTitle;		// Title TextField
 	private JScrollPane newTxtScrollPane;	// Text ScrollPane
 	private JTextArea newTxtArea;		//  Text Area
-	private JTextField newTagTxtField;	// Tag Text Field
+	private JTextField newTxtTag;	// Tag Text Field
 	private JPanel newJDatePanel;		// Date Panel
 	
 	/* new JDatePicker */
@@ -173,6 +181,8 @@ public class MainView extends JFrame {
 	private JComboBox<String> listCbBox2;		// List Combo Box2
 	
 	private Vector<DiaryContent> vc = new Vector<>();	// List Vector
+	private LJListPopUp listMenu = new LJListPopUp();	// List PopUp
+	private DiaryContent listSelected;			// List Right Mouse Select
 	
 	/** 
 	 * Calendar
@@ -183,11 +193,6 @@ public class MainView extends JFrame {
 	private UtilCalendarModel model;
 	private JDatePanelImpl datePanel;
 	private JDatePickerImpl datePicker;
-	
-	/**
-	 * Vector
-	 */
-	private Vector<DiaryFile> readFileVc = new Vector<>();
 	
 	/**
 	 * Test Module
@@ -204,14 +209,16 @@ public class MainView extends JFrame {
 		init();
 		initEvent();
 		initRead();
+		initEdit();
 		updateNewList();
 		testModule();
+		updateListByCalendarDays("2014-11");
 	}
 	
 	private void testModule(){
 		newTxtTitle.setText(testModule.getTitle());;		// Title TextField
 		newTxtArea.setText(testModule.getContent());;		//  Text Area
-		newTagTxtField.setText(testModule.getTags2String());	// Tag Text Field
+		newTxtTag.setText(testModule.getTags2String());	// Tag Text Field
 	}
 
 	/**
@@ -323,16 +330,16 @@ public class MainView extends JFrame {
 		
 		editTxtScrollPane = new JScrollPane();
 		editTxtScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		eidtTxtArea = new JTextArea();
-		eidtTxtArea.setFont(new Font(EnvironmentVariables.defaultFont, Font.BOLD, 15));
-		editTxtScrollPane.setViewportView(eidtTxtArea);
-		eidtTxtArea.setLineWrap(true);
-		eidtTxtArea.setWrapStyleWord(true);
+		editTxtArea = new JTextArea();
+		editTxtArea.setFont(new Font(EnvironmentVariables.defaultFont, Font.BOLD, 15));
+		editTxtScrollPane.setViewportView(editTxtArea);
+		editTxtArea.setLineWrap(true);
+		editTxtArea.setWrapStyleWord(true);
 		
-		editTagTxtField = new JTextField();
-		editTagTxtField.setFont(new Font(EnvironmentVariables.defaultFont, Font.BOLD, 15));
-		editTagTxtField.setToolTipText("Tag");
-		editTagTxtField.setColumns(10);
+		editTxtTag = new JTextField();
+		editTxtTag.setFont(new Font(EnvironmentVariables.defaultFont, Font.BOLD, 15));
+		editTxtTag.setToolTipText("Tag");
+		editTxtTag.setColumns(10);
 		
 		editDateJPanel = new JPanel();
 		editDateJPanel.setBackground(SystemColor.controlHighlight);
@@ -393,9 +400,9 @@ public class MainView extends JFrame {
 		newTxtArea.setLineWrap(true);
 		newTxtArea.setWrapStyleWord(true);
 		
-		newTagTxtField = new JTextField();
-		newTagTxtField.setFont(new Font(EnvironmentVariables.defaultFont, Font.BOLD, 15));
-		newTagTxtField.setColumns(10);
+		newTxtTag = new JTextField();
+		newTxtTag.setFont(new Font(EnvironmentVariables.defaultFont, Font.BOLD, 15));
+		newTxtTag.setColumns(10);
 		
 		newJDatePanel = new JPanel();
 		newJDatePanel.setBackground(SystemColor.controlHighlight);
@@ -448,6 +455,7 @@ public class MainView extends JFrame {
 		list = new JList<>();
 		list.setFont(new Font(EnvironmentVariables.defaultFont, Font.BOLD, 13));
 		listScrollPane.setViewportView(list);
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
 		searchTxtField = new JTextField();
 		searchTxtField.setFont(new Font(EnvironmentVariables.defaultFont, Font.BOLD, 15));
@@ -476,7 +484,7 @@ public class MainView extends JFrame {
 		model.setDate(ControlDate.getYear(), ControlDate.getMonth()-1, ControlDate.getDay());
 		model.setSelected(true);
 		
-		datePanel = new JDatePanelImpl(model);	
+		datePanel = new JDatePanelImpl(model, this);	
 		datePicker = new JDatePickerImpl(datePanel);
 		datePanel.setPreferredSize(new java.awt.Dimension(200, 190));
 		 
@@ -547,7 +555,7 @@ public class MainView extends JFrame {
 					.addGroup(gl_editPane.createParallelGroup(Alignment.LEADING)
 						.addComponent(editBtnControlPane, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
 						.addComponent(editTxtScrollPane)
-						.addComponent(editTagTxtField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
+						.addComponent(editTxtTag, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
 						.addComponent(editTxtTitle, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_editPane.createParallelGroup(Alignment.LEADING)
@@ -569,7 +577,7 @@ public class MainView extends JFrame {
 						.addGroup(gl_editPane.createSequentialGroup()
 							.addComponent(editTxtScrollPane, GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
 							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(editTagTxtField, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE))
+							.addComponent(editTxtTag, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE))
 						.addComponent(editFileScrollPane, GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_editPane.createParallelGroup(Alignment.LEADING, false)
@@ -591,7 +599,7 @@ public class MainView extends JFrame {
 					.addGroup(gl_newPane.createParallelGroup(Alignment.LEADING)
 							.addComponent(newBtnControlPane, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
 							.addComponent(newTxtScrollPane)
-							.addComponent(newTagTxtField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
+							.addComponent(newTxtTag, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
 							.addComponent(newTxtTitle, GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_newPane.createParallelGroup(Alignment.LEADING)
@@ -613,7 +621,7 @@ public class MainView extends JFrame {
 						.addGroup(Alignment.TRAILING, gl_newPane.createSequentialGroup()
 							.addComponent(newTxtScrollPane, GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
 							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(newTagTxtField, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE))
+							.addComponent(newTxtTag, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE))
 						.addComponent(newFileScrollPane, GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_newPane.createParallelGroup(Alignment.LEADING, false)
@@ -695,9 +703,9 @@ public class MainView extends JFrame {
 		 * New Tab Event Listener
 		 */
 		/* Text Area */
-		newBtnCancel.addActionListener(new newBtnCancleAction());		// Cancel Button
-		newBtnPreview.addActionListener(new newBtnPreviewAction());		// Preview Button
-		newBtnSave.addActionListener(new newBtnSaveAction());			// Save Button		
+		newBtnCancel.addActionListener(new BtnCancleAction());		// Cancel Button
+		newBtnPreview.addActionListener(new BtnPreviewAction());		// Preview Button
+		newBtnSave.addActionListener(new BtnSaveAction());			// Save Button		
 		
 		/* File Area */
 		newBtnFile.addActionListener(new BtnFileAction());	// Attach a File
@@ -709,8 +717,13 @@ public class MainView extends JFrame {
 		newListMenu.getRemoveAllItem().addActionListener(new FileListRemoveAllAction());	// List Right Click Remove All
 		
 		/*
-		 * New Tab Event Listener
+		 * Edit Tab Event Listener
 		 */
+		/* Text Area */
+		editBtnCancel.addActionListener(new BtnCancleAction());		// Cancel Button
+		editBtnPreview.addActionListener(new BtnPreviewAction());		// Preview Button
+		editBtnSave.addActionListener(new BtnSaveAction());			// Save Button	
+		
 		/* File Area */
 		editBtnFile.addActionListener(new BtnFileAction());	// Attach a File
 		editFileList.addMouseMotionListener(new FileListMouseMotion());	// List MouseMotion Listener
@@ -723,7 +736,11 @@ public class MainView extends JFrame {
 		/*
 		 * List Pane Event Listener
 		 */
-		list.addMouseListener(new ListMouse());	// List Mouse
+		list.addMouseListener(new ListMouse());	// List Mouse Listener
+		listMenu.getReadItem().addActionListener(new ListReadAction());	// List Right Click Read
+		listMenu.getNewItem().addActionListener(new ListNewAction());	// List Right Click New
+		listMenu.getEditItem().addActionListener(new ListEditAction());	// List Right Click Edit
+		listMenu.getRemoveItem().addActionListener(new ListRemoveAction());	// List Right Click Remove
 		
 		/* Combo Box Event Listener */
 		listCbBox1.addActionListener(new CbBox1Action());	// Combo Box1 Listener
@@ -732,14 +749,13 @@ public class MainView extends JFrame {
 		/* Search Event Listener */
 		btnSearch.addActionListener(new SearchBtnAction());	// Search Button Listener
 		searchTxtField.addKeyListener(new SearchTxtKey());	// Search TextField Listener
-		
+			
 		/*
 		 * Read Pane Event Listener
 		 */
 		readFileList.addMouseMotionListener(new FileListMouseMotion());	// List MouseMotion Listener
 		readFileList.addMouseListener(new ReadFileListMouse());	// List Mouse Listener
 		readListMenu.getOpenItem().addActionListener(new FileListOpenAction());	// List Right Click Open
-		
 	}
 	
 	/* Init Read */
@@ -750,10 +766,30 @@ public class MainView extends JFrame {
 		if(!vc.isEmpty()){
 	    	readTxtArea.setText(ContentToHTML.getContentToHTML(vc.get(0)));
 	    	readListModel.removeAllElements();
-	    	readFileVc.removeAllElements();
-	    	ControlData.getFileRead(readFileVc, vc.get(0).getDate());
-	    	for( DiaryFile i : readFileVc){
+	    	readVc.removeAllElements();
+	    	ControlData.getFileRead(readVc, vc.get(0).getDiary_id(), vc.get(0).getDate());
+	    	for( DiaryFile i : readVc){
 	    		readListModel.addElement(i);
+	    	}
+    	}
+	}
+	
+	/* Init Edit */
+	private void initEdit(){
+		
+		if(!vc.isEmpty()){
+			editTxtTitle.setText(vc.get(0).getTitle());
+	    	editTxtArea.setText(vc.get(0).getContent());
+	    	editTxtTag.setText(vc.get(0).getTags2String());
+	    	editListModel.removeAllElements();
+	    	editVc.removeAllElements();
+	    	ControlData.getFileEdit(editVc, vc.get(0).getDiary_id(), vc.get(0).getDate());
+	    	editModel.setDate(ControlDate.getdateForSettingCalender(vc.get(0).getDate(),0)
+	    			, ControlDate.getdateForSettingCalender(vc.get(0).getDate(),1)-1
+	    			, ControlDate.getdateForSettingCalender(vc.get(0).getDate(),2));
+	    	editDiary_Id = vc.get(0).getDiary_id();
+	    	for( DiaryFile i : editVc){
+	    		editListModel.addElement(i);
 	    	}
     	}
 	}
@@ -774,6 +810,33 @@ public class MainView extends JFrame {
 		vc.removeAllElements();
 		vc = ControlData.getDiaryRead(vc, diary_id);	
 		
+		Collections.sort(vc, new Comparator<DiaryContent>() {
+		    public int compare(DiaryContent m1, DiaryContent m2) {
+		    	Calendar c1=Calendar.getInstance();
+		    	Calendar c2=Calendar.getInstance();;
+				TimeZone tz = TimeZone.getTimeZone("GMT+09:00");
+				c1.setTimeZone(tz);
+				c2.setTimeZone(tz);
+		    	
+		    	c1.set(ControlDate.getdateForSettingCalender(m1.getDate(),0)
+		    			, ControlDate.getdateForSettingCalender(m1.getDate(),1)
+		    			, ControlDate.getdateForSettingCalender(m1.getDate(),2)
+		    			, ControlDate.getdateForSettingCalender(m1.getDate(),3)
+		    			, ControlDate.getdateForSettingCalender(m1.getDate(),4)
+		    			, ControlDate.getdateForSettingCalender(m1.getDate(),5)
+		    			);
+		    	c2.set(ControlDate.getdateForSettingCalender(m2.getDate(),0)
+		    			, ControlDate.getdateForSettingCalender(m2.getDate(),1)
+		    			, ControlDate.getdateForSettingCalender(m2.getDate(),2)
+		    			, ControlDate.getdateForSettingCalender(m2.getDate(),3)
+		    			, ControlDate.getdateForSettingCalender(m2.getDate(),4)
+		    			, ControlDate.getdateForSettingCalender(m2.getDate(),5)
+		    			);
+
+		        return -c1.compareTo(c2);
+		    }
+		});
+		
 		DiaryContent[] arr = new DiaryContent[vc.size()];
 		arr = (DiaryContent[])vc.toArray(arr);
 		
@@ -789,6 +852,36 @@ public class MainView extends JFrame {
 		arr = (DiaryContent[])vc.toArray(arr);
 		
 		list.setListData(arr);
+	}
+	
+	/* Update List By Calendar */
+	public void updateListByCalendar(String date) {
+		vc.removeAllElements();
+		vc = ControlData.getDiaryByCalendar(vc, date);	
+		
+		DiaryContent[] arr = new DiaryContent[vc.size()];
+		arr = (DiaryContent[])vc.toArray(arr);
+		
+		list.setListData(arr);
+	}
+	public void updateListByCalendarClear() {
+		vc.removeAllElements();
+		
+		DiaryContent[] arr = new DiaryContent[vc.size()];
+		arr = (DiaryContent[])vc.toArray(arr);
+		
+		list.setListData(arr);
+	}
+	public int[] updateListByCalendarDays(String date) {
+		Vector<Integer> days = new Vector<>();
+		ControlData.getDiaryByCalendarDays(days, date);
+		
+		int[] arr = new int[days.size()];
+		
+		for (int i = 0; i<arr.length; i++){
+			arr[i] = days.elementAt(i);
+		}
+		return arr;
 	}
 	
 	/* Exit Diary Event */
@@ -900,10 +993,10 @@ public class MainView extends JFrame {
 	            	
         			String path="";
         			
-        			if(e.getSource() == newFileList || e.getSource() == editFileList) {
+        			if(e.getSource() == newFileList) {
         				path = m.getElementAt(index).getFilePath();
         			}
-        			else if(e.getSource() == readFileList){
+        			else if(e.getSource() == readFileList || e.getSource() == editFileList){
         				File tempFile = new File(m.getElementAt(index).getFilePath());
         				path = tempFile.getAbsolutePath();
         			}
@@ -1072,7 +1165,7 @@ public class MainView extends JFrame {
 			
 			if(e.getSource() == newListMenu.getRemoveItem()){
 				if(!newRemoveFilePath.equals("")){
-					removeList(Utils.getFileName(newRemoveFilePath), newListModel, newVc);
+					removeList(Utils.getFileName(newRemoveFilePath), newListModel, newVc, 0);
 					if(newOpenFilePath.equals(newRemoveFilePath)){
 						newOpenFilePath = "";
 					}
@@ -1081,7 +1174,7 @@ public class MainView extends JFrame {
 			}
 			else{
 				if(!editRemoveFilePath.equals("")){
-					removeList(Utils.getFileName(editRemoveFilePath), editListModel, editVc);
+					removeList(Utils.getFileName(editRemoveFilePath), editListModel, editVc, 1);
 					if(editOpenFilePath.equals(editRemoveFilePath)){
 						editOpenFilePath = "";
 					}
@@ -1090,7 +1183,7 @@ public class MainView extends JFrame {
 			}	
 		}
 		
-		private void removeList(String fileName, DefaultListModel<DiaryFile> listModel, Vector<DiaryFile> vc){
+		private void removeList(String fileName, DefaultListModel<DiaryFile> listModel, Vector<DiaryFile> vc, int set){
 			
 			for(int i=0; i<listModel.getSize(); i++){
 				if(listModel.getElementAt(i).getFileName().equals(fileName)){
@@ -1101,7 +1194,10 @@ public class MainView extends JFrame {
 			
 			for(DiaryFile i : vc){
 				if(i.getFileName().equals(fileName)){
-					vc.removeElement(i);
+					if(set == 1){
+						removedFileVc.add(i);
+					}
+					vc.removeElement(i);			
 					break;
 				}
 			}
@@ -1151,88 +1247,175 @@ public class MainView extends JFrame {
 	}
 	
 	/* Cancel Button */
-	class newBtnCancleAction implements ActionListener {
+	class BtnCancleAction implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			newTxtTitle.setText("");
-			newTxtArea.setText("");
-			newTagTxtField.setText("");
-			newModel.setDate(ControlDate.getYear(), ControlDate.getMonth()-1, ControlDate.getDay());
-			newListModel.removeAllElements();
-			newVc.removeAllElements();	
+			
+			if(e.getSource() == newBtnCancel){
+				newTxtTitle.setText("");
+				newTxtArea.setText("");
+				newTxtTag.setText("");
+				newModel.setDate(ControlDate.getYear(), ControlDate.getMonth()-1, ControlDate.getDay());
+				newListModel.removeAllElements();
+				newVc.removeAllElements();
+			}
+			else{
+				editTxtTitle.setText("");
+				editTxtArea.setText("");
+				editTxtTag.setText("");
+				editModel.setDate(ControlDate.getYear(), ControlDate.getMonth()-1, ControlDate.getDay());
+				editListModel.removeAllElements();
+				editVc.removeAllElements();
+			}
 		}	
 	}
 	
 	/* Preview Button */
-	class newBtnPreviewAction implements ActionListener {
+	class BtnPreviewAction implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			Calendar selectedValue = (Calendar) newDatePicker.getModel().getValue();
-			
-			String title = newTxtTitle.getText();
-			String date = ControlDate.getdateS(selectedValue);
-			String content = newTxtArea.getText();
-			String[] tags = newTagTxtField.getText().replace(", ", ",").split(",");
-			String[] files = new String[newVc.size()];
-			
-			for(int i=0; i<newVc.size(); i++){
-				files[i] = newVc.get(i).getFileName();
+			if(e.getSource() == newBtnPreview){
+				Calendar selectedValue = (Calendar) newDatePicker.getModel().getValue();
+				
+				String title = newTxtTitle.getText();
+				String date = ControlDate.getdateS(selectedValue);
+				String content = newTxtArea.getText();
+				String[] tags = newTxtTag.getText().replace(", ", ",").split(",");
+				String[] files = new String[newVc.size()];
+				
+				for(int i=0; i<newVc.size(); i++){
+					files[i] = newVc.get(i).getFileName();
+				}
+				
+				DiaryContent diary = new DiaryContent(title, date, content, tags, files);
+				
+				Preview prv = new Preview(diary);
 			}
-			
-			DiaryContent diary = new DiaryContent(title, date, content, tags, files);
-			
-			Preview prv = new Preview(diary);
+			else{
+				Calendar selectedValue = (Calendar) editDatePicker.getModel().getValue();
+				
+				String title = editTxtTitle.getText();
+				
+				String date;
+				if(ControlDate.getdateStoS(editCurrentDate).equals(ControlDate.getdateStoS(ControlDate.getdateS(selectedValue)))){
+					date = editCurrentDate;
+				}
+				else{
+					date = ControlDate.getdateS(selectedValue);
+				}
+				String content = editTxtArea.getText();
+				String[] tags = editTxtTag.getText().replace(", ", ",").split(",");
+				String[] files = new String[editVc.size()];
+				
+				for(int i=0; i<editVc.size(); i++){
+					files[i] = editVc.get(i).getFileName();
+				}
+				
+				DiaryContent diary = new DiaryContent(title, date, content, tags, files);
+				
+				Preview prv = new Preview(diary);
+			}
 		}
 		
 	}
 	
 	/* Save Button */
-	class newBtnSaveAction implements ActionListener {
+	class BtnSaveAction implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			
-			boolean boolDiary = true;
-			boolean boolFile = true;
-			
-			Calendar selectedValue = (Calendar) newDatePicker.getModel().getValue();
-			
-			String title = newTxtTitle.getText();
-			String date = ControlDate.getdateS(selectedValue);
-			String content = newTxtArea.getText();
-			String[] tags = newTagTxtField.getText().replace(", ", ",").split(",");
-			String[] files = new String[newVc.size()];
-			
-			for(int i=0; i<newVc.size(); i++){
-				files[i] = newVc.get(i).getFileName();
+			if(e.getSource() == newBtnSave){
+				int diary_id = 0;
+				boolean boolFile = true;
+				
+				Calendar selectedValue = (Calendar) newDatePicker.getModel().getValue();
+				
+				String title = newTxtTitle.getText();
+				String date = ControlDate.getdateS(selectedValue);
+				String content = newTxtArea.getText();
+				String[] tags = newTxtTag.getText().replace(", ", ",").split(",");
+				String[] files = new String[newVc.size()];
+				
+				for(int i=0; i<newVc.size(); i++){
+					files[i] = newVc.get(i).getFileName();
+				}
+				
+				DiaryContent diary = new DiaryContent(title, date, content, tags, files);
+				
+				diary_id = ControlData.insertDataByClass(diary);
+				
+				if(diary_id != 0)
+					boolFile = ControlData.insertFile(diary_id, newVc);
+				
+				newTxtTitle.setText("");
+				newTxtArea.setText("");
+				newTxtTag.setText("");
+				newModel.setDate(ControlDate.getYear(), ControlDate.getMonth()-1, ControlDate.getDay());
+				newListModel.removeAllElements();
+				newVc.removeAllElements();
+				updateNewList();
+				
+				if(diary_id == 0) {
+					JOptionPane.showMessageDialog(null, "Occurrence of error when you save a diary.","Warning",JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+				else if(!boolFile) {
+					JOptionPane.showMessageDialog(null, "Occurrence of error when you save a fo;e.","Warning",JOptionPane.WARNING_MESSAGE);
+					return;
+				}
 			}
-			
-			DiaryContent diary = new DiaryContent(title, date, content, tags, files);
-			
-			boolDiary = ControlData.insertDataByClass(diary);
-			
-			if(boolDiary)
-				boolFile = ControlData.insertFile(date, newVc);
-			
-			newTxtTitle.setText("");
-			newTxtArea.setText("");
-			newTagTxtField.setText("");
-			newModel.setDate(ControlDate.getYear(), ControlDate.getMonth()-1, ControlDate.getDay());
-			newListModel.removeAllElements();
-			newVc.removeAllElements();
-			updateNewList();
-			
-			if(!boolDiary) {
-				JOptionPane.showMessageDialog(null, "Occurrence of error when you save a diary.","Warning",JOptionPane.WARNING_MESSAGE);
-				return;
-			}
-			else if(!boolFile) {
-				JOptionPane.showMessageDialog(null, "Occurrence of error when you save a fo;e.","Warning",JOptionPane.WARNING_MESSAGE);
-				return;
-			}
-			
+			else {
+				boolean boolDiary = false;
+				boolean boolFile = false;
+				
+				Calendar selectedValue = (Calendar) editDatePicker.getModel().getValue();
+				
+				String title = editTxtTitle.getText();
+				
+				String date;
+				if(ControlDate.getdateStoS(editCurrentDate).equals(ControlDate.getdateStoS(ControlDate.getdateS(selectedValue)))){
+					date = editCurrentDate;
+				}
+				else{
+					date = ControlDate.getdateS(selectedValue);
+				}
+				String content = editTxtArea.getText();
+				String[] tags = editTxtTag.getText().replace(", ", ",").split(",");
+				String[] files = new String[editVc.size()];
+				
+				for(int i=0; i<editVc.size(); i++){
+					files[i] = editVc.get(i).getFileName();
+				}
+				
+				DiaryContent diary = new DiaryContent(title, date, content, tags, files, editDiary_Id);
+				
+				boolDiary = ControlData.updateDataByClass(diary, editDiary_Id);
+				
+				if(boolDiary)
+					boolFile = ControlData.updateFile(editDiary_Id, editVc, removedFileVc);
+				
+				editTxtTitle.setText("");
+				editTxtArea.setText("");
+				editTxtTag.setText("");
+				editModel.setDate(ControlDate.getYear(), ControlDate.getMonth()-1, ControlDate.getDay());
+				editListModel.removeAllElements();
+				editVc.removeAllElements();
+				removedFileVc.removeAllElements();
+				editDiary_Id = 0;
+				updateNewList();
+				
+				if(!boolDiary) {
+					JOptionPane.showMessageDialog(null, "Occurrence of error when you save a diary.","Warning",JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+				else if(!boolFile) {
+					JOptionPane.showMessageDialog(null, "Occurrence of error when you save a fo;e.","Warning",JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+			}			
 		}
 	}
 	
@@ -1256,26 +1439,61 @@ public class MainView extends JFrame {
 
 		@Override
 		public void mousePressed(MouseEvent e) {
-			
-			JList<DiaryContent> source = (JList<DiaryContent>) e.getSource();
-            ListModel<DiaryContent> m = source.getModel();
-            int index = source.locationToIndex(e.getPoint());
-            if (index > -1) {
-            	readTxtArea.setText("");
-            	readTxtArea.setText(ContentToHTML.getContentToHTML(m.getElementAt(index)));
-            	readListModel.removeAllElements();
-            	readFileVc.removeAllElements();
-            	ControlData.getFileRead(readFileVc, m.getElementAt(index).getDate());
-            	for( DiaryFile i : readFileVc){
-            		readListModel.addElement(i);
-            	}
-            }
+	
+			if(e.getButton() == MouseEvent.BUTTON1){
+				JList<DiaryContent> source = (JList<DiaryContent>) e.getSource();
+	            ListModel<DiaryContent> m = source.getModel();
+	            int index = source.locationToIndex(e.getPoint());
+	            if (index > -1) {
+	            	readTxtArea.setText("");
+	            	readTxtArea.setText(ContentToHTML.getContentToHTML(m.getElementAt(index)));
+	            	readListModel.removeAllElements();
+	            	readVc.removeAllElements();
+	            	ControlData.getFileRead(readVc, m.getElementAt(index).getDiary_id(), m.getElementAt(index).getDate());
+	            	for( DiaryFile i : readVc){
+	            		readListModel.addElement(i);
+	            	}
+	            	
+	            	editTxtTitle.setText(m.getElementAt(index).getTitle());
+	    	    	editTxtArea.setText(m.getElementAt(index).getContent());
+	    	    	editTxtTag.setText(m.getElementAt(index).getTags2String());
+	    	    	editListModel.removeAllElements();
+	    	    	editVc.removeAllElements();
+	    	    	editModel.setDate(ControlDate.getdateForSettingCalender(m.getElementAt(index).getDate(),0)
+	    	    			, ControlDate.getdateForSettingCalender(m.getElementAt(index).getDate(),1)-1
+	    	    			, ControlDate.getdateForSettingCalender(m.getElementAt(index).getDate(),2));
+	    	    	editCurrentDate = m.getElementAt(index).getDate();
+	    	    	editDiary_Id = m.getElementAt(index).getDiary_id();
+	    	    	ControlData.getFileEdit(editVc, m.getElementAt(index).getDiary_id(), m.getElementAt(index).getDate());
+	    	    	for( DiaryFile i : editVc){
+	    	    		editListModel.addElement(i);
+	    	    	}
+	            }
+		    }	    
+		    else if(e.getButton() == MouseEvent.BUTTON3){
+		    	JList<DiaryContent> source = (JList<DiaryContent>) e.getSource();
+	            ListModel<DiaryContent> m = source.getModel();
+	            int index = source.locationToIndex(e.getPoint());
+	            if (index > -1) {
+	            	if(e.getSource() == list){
+	            		listSelected = m.getElementAt(index);
+	            		listMenu.setEnabledItem(true);
+	            		listMenu.show(e.getComponent(), e.getX(), e.getY());            		
+	            	}
+	            	list.setSelectedIndex(index);
+	            } else {
+	            	if(e.getSource() == list){
+	            		listSelected = null;
+	            		listMenu.setEnabledItem(false);
+	            		listMenu.show(e.getComponent(), e.getX(), e.getY());            		
+	            	}
+	            }
+		    }	
 		}
 
 		@Override
-		public void mouseReleased(MouseEvent e) {
-			
-		}		
+		public void mouseReleased(MouseEvent e) {			
+	    }		
 	}
 	
 	/* Read Right Click Pop Up */
@@ -1410,6 +1628,67 @@ public class MainView extends JFrame {
 		@Override
 		public void keyTyped(KeyEvent e) {			
 		}
-		
+	}
+	
+	/* List Right Mouse Read Listener */
+	class ListReadAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+	        contentPane.setSelectedIndex(contentPane.getTabCount()-3);
+	        
+	        readTxtArea.setText("");
+        	readTxtArea.setText(ContentToHTML.getContentToHTML(listSelected));
+        	readListModel.removeAllElements();
+        	readVc.removeAllElements();
+        	ControlData.getFileRead(readVc, listSelected.getDiary_id(), listSelected.getDate());
+        	for( DiaryFile i : readVc){
+        		readListModel.addElement(i);
+        	}
+		}
+	}
+	
+	/* List Right Mouse New Listener */
+	class ListNewAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+	        contentPane.setSelectedIndex(contentPane.getTabCount()-1);
+		}
+	}
+	
+	/* List Right Mouse New Listener */
+	class ListEditAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			contentPane.setSelectedIndex(contentPane.getTabCount()-2);
+			
+			editTxtTitle.setText(listSelected.getTitle());
+	    	editTxtArea.setText(listSelected.getContent());
+	    	editTxtTag.setText(listSelected.getTags2String());
+	    	editListModel.removeAllElements();
+	    	editVc.removeAllElements();
+	    	editModel.setDate(ControlDate.getdateForSettingCalender(listSelected.getDate(),0)
+	    			, ControlDate.getdateForSettingCalender(listSelected.getDate(),1)-1
+	    			, ControlDate.getdateForSettingCalender(listSelected.getDate(),2));
+	    	editCurrentDate = listSelected.getDate();
+	    	editDiary_Id = listSelected.getDiary_id();
+	    	ControlData.getFileEdit(editVc, listSelected.getDiary_id(), listSelected.getDate());
+	    	for( DiaryFile i : editVc){
+	    		editListModel.addElement(i);
+	    	}
+		}
+	}
+	
+	/* List Right Mouse New Listener */
+	class ListRemoveAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			ControlData.removeDiary(listSelected.getDiary_id());
+			listSelected = null;
+			updateNewList();
+		}
 	}
 }

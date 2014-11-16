@@ -11,6 +11,7 @@ public class DiaryContent {
 	private String content;
 	private String[] tags;
 	private String[] files;
+	private int diary_id=0;
 	
 	
 	public DiaryContent(){
@@ -36,6 +37,24 @@ public class DiaryContent {
 		this.content = content;
 		this.tags = tags;
 		this.files = files;
+	}
+	
+	public DiaryContent(String title, String date, String content, String[] tags, String[] files, int diary_id){
+		this.title = title;
+		this.date = date;
+		this.content = content;
+		this.tags = tags;
+		this.files = files;
+		this.diary_id = diary_id;
+	}
+	
+	public DiaryContent(DiaryContent dc){
+		this.title = dc.title;
+		this.date = dc.date;
+		this.content = dc.content;
+		this.tags = dc.tags;
+		this.files = dc.files;
+		this.diary_id = dc.diary_id;
 	}
 	
 	@Override
@@ -190,5 +209,19 @@ public class DiaryContent {
 	 */
 	public void setFiles(String[] files) {
 		this.files = files;
+	}
+
+	/**
+	 * @return diary_id
+	 */
+	public int getDiary_id() {
+		return diary_id;
+	}
+
+	/**
+	 * @param diary_id set diary_id
+	 */
+	public void setDiary_id(int diary_id) {
+		this.diary_id = diary_id;
 	}	
 }
