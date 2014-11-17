@@ -4,7 +4,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 /**
- * Created by SeoDong on 2014-11-16.
+ * Created by SeoDong on 2014-11-14.
  */
 public class RJListPopUp extends JPopupMenu{
 	private JMenuItem openItem;

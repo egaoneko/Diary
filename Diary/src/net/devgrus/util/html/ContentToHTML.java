@@ -33,7 +33,7 @@ public class ContentToHTML {
 		tag = "Tag : ";
 		title = dContent.getTitle();
 		date = dContent.getDate();
-		content = dContent.getContent();
+		content = dContent.getContent().replace("\n", "<br/>");
 
 		if(dContent.isTags()){
 			tag += dContent.getTags2String();

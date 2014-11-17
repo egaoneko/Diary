@@ -66,6 +66,13 @@ public class ControlData {
             		+ "diary_id integer not null,"
             		+ "FOREIGN KEY(diary_id) REFERENCES diary(id)"
             		+ ");");
+            stat.executeUpdate("create table if not exists user ("
+            		+ "id integer primary key autoincrement,"
+            		+ "is_lock text not null,"
+            		+ "password text,"
+            		+ "lookandfeel text,"
+            		+ "customize text"
+            		+ ");");
         } catch(Exception e) { e.printStackTrace(); }
     }
 
@@ -1214,5 +1221,288 @@ public class ControlData {
 			}
 		}
 		return success;
+	}
+	
+	/**
+	 * Is User?
+	 * @return
+	 */
+	public static boolean isUser() {
+		String sql = "select count(*) from user";
+
+		int count = 0;
+		boolean ret = false;
+
+		Connection conn = null;
+		Statement smt = null;
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			// create a database connection
+			conn = DriverManager.getConnection("jdbc:sqlite:"+DATABASE);
+			smt = conn.createStatement();
+			
+			ResultSet rs = smt.executeQuery(sql);			
+			while (rs.next()){
+				  count = rs.getInt(1);
+			}
+			if(count != 0) ret = true;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * Is Lock?
+	 * @return
+	 */
+	public static boolean isLock() {
+		String sql = "select is_lock from user";
+
+		boolean ret = false;
+
+		Connection conn = null;
+		Statement smt = null;
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			// create a database connection
+			conn = DriverManager.getConnection("jdbc:sqlite:"+DATABASE);
+			smt = conn.createStatement();
+			
+			ResultSet rs = smt.executeQuery(sql);				
+			ret = Boolean.parseBoolean(rs.getString("is_lock"));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * Check Password
+	 * @return
+	 */
+	public static boolean checkPw(String password) {
+		String sql = "select password from user";
+
+		boolean ret = false;
+
+		Connection conn = null;
+		Statement smt = null;
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			// create a database connection
+			conn = DriverManager.getConnection("jdbc:sqlite:"+DATABASE);
+			smt = conn.createStatement();
+			
+			ResultSet rs = smt.executeQuery(sql);			
+			
+			String pw = rs.getString("password");
+			
+			if(pw.equals(password))
+				ret = true;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * Get Look And Feel
+	 * @return
+	 */
+	public static String getLookAndFeel() {
+		String sql = "select lookandfeel from user";
+
+		String ret = "";
+
+		Connection conn = null;
+		Statement smt = null;
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			// create a database connection
+			conn = DriverManager.getConnection("jdbc:sqlite:"+DATABASE);
+			smt = conn.createStatement();
+			
+			ResultSet rs = smt.executeQuery(sql);				
+			ret = rs.getString("lookandfeel");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * Update Password
+	 * @return
+	 */
+	public static int updatePw(String password) {
+		String sql = "select id from user";
+		String sql2 = "update user set is_lock = 'true', password = ? where id = ?";
+
+		int ret = 0;
+
+		Connection conn = null;
+		PreparedStatement psmt = null;
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			// create a database connection
+			conn = DriverManager.getConnection("jdbc:sqlite:"+DATABASE);
+
+			psmt = conn.prepareStatement(sql);
+			ResultSet rs = psmt.executeQuery();
+			ret = rs.getInt("id");	
+			
+			if(ret != 0){
+				psmt = conn.prepareStatement(sql2);
+				psmt.setString(1, password);
+				psmt.setInt(2, ret);
+				ret = psmt.executeUpdate();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * Remove Password
+	 * @return
+	 */
+	public static int removePw() {
+		String sql = "select id from user";
+		String sql2 = "update user set is_lock = 'false', password = '' where id = ?";
+
+		int ret = 0;
+
+		Connection conn = null;
+		PreparedStatement psmt = null;
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			// create a database connection
+			conn = DriverManager.getConnection("jdbc:sqlite:"+DATABASE);
+
+			psmt = conn.prepareStatement(sql);
+			ResultSet rs = psmt.executeQuery();
+			ret = rs.getInt("id");	
+			
+			if(ret != 0){
+				psmt = conn.prepareStatement(sql2);
+				psmt.setInt(1, ret);
+				ret = psmt.executeUpdate();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * insertUser
+	 * @return
+	 */
+	public static int insertUser(String password, boolean lock) {
+		
+		boolean is_Look = lock;
+		
+		String sql ="";	
+		if(is_Look)
+			sql = "insert into user ( is_lock, password, lookandfeel ) values ( 'true', '"+password+"', 'Sea Glass')";
+		else
+			sql = "insert into user ( is_lock, lookandfeel ) values ( 'false' , 'Sea Glass')";
+
+		Connection conn = null;
+		Statement smt = null;
+		
+		String[] tags = null;
+		
+		int rs = 0;
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			// create a database connection
+			conn = DriverManager.getConnection("jdbc:sqlite:"+DATABASE);			
+			smt = conn.createStatement();			
+			rs = smt.executeUpdate(sql);			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return rs;
 	}
 }

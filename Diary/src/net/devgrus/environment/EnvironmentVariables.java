@@ -34,6 +34,21 @@ public class EnvironmentVariables {
 	};
 	public static final String icons32Path = "/net/devgrus/resource/images/fileicons/size32/";
 	public static final String icons16Path = "/net/devgrus/resource/images/fileicons/size16/";
+	public static final String menuIconsPath = "/net/devgrus/resource/images/menuicons/";
 	
 	public static final String defaultFont = "¸¼Àº °íµñ";
+	public static final String[][] lookandfeel = {
+		{"Metal", "javax.swing.plaf.metal.MetalLookAndFeel"},
+		{"Nimbus","javax.swing.plaf.nimbus.NimbusLookAndFeel"},
+		{"CDE/Motif","com.sun.java.swing.plaf.motif.MotifLookAndFeel"},
+		{"Windows","com.sun.java.swing.plaf.windows.WindowsLookAndFeel"},
+		{"Windows Classic","com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel"},
+		{"Quaqua","ch.randelshofer.quaqua.QuaquaLookAndFeel"},
+		{"Liquid","com.birosoft.liquid.LiquidLookAndFeel"},
+		{"InfoNode","net.infonode.gui.laf.InfoNodeLookAndFeel"},
+		{"Sea Glass","com.seaglasslookandfeel.SeaGlassLookAndFeel"},
+		{"Napkin Laf","net.sourceforge.napkinlaf.NapkinLookAndFeel"},
+		{"JTattoo","com.jtattoo.plaf.smart.SmartLookAndFeel"},
+		{"JTattoo","com.jtattoo.plaf.mcwin.McWinLookAndFeel"}
+	};
 }

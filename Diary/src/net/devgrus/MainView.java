@@ -17,6 +17,7 @@ import net.devgrus.environment.AquaBarTabbedPaneUI;
 import net.devgrus.environment.EnvironmentVariables;
 import net.devgrus.util.ControlData;
 import net.devgrus.util.ControlDate;
+import net.devgrus.util.LookAndFeelUtil;
 import net.devgrus.util.OpenBrowser;
 import net.devgrus.util.Utils;
 import net.devgrus.util.html.ContentToHTML;
@@ -58,24 +59,32 @@ public class MainView extends JFrame {
 	 * MenuBar
 	 */
 	private JMenuBar menuBar;
+	
+	/* File Menu */
 	private JMenu mnFile;
-	private JMenu mnOption;
-	private JMenu mnHelp;
 	private JMenuItem mntmExport;
 	private JMenuItem mntmExit;
-	private JMenuItem mntmSetting;
+	
+	/* Option Menu */
+	private JMenu mnOption;
+	private JMenu mnSetting;
+	private JMenuItem mntmChangePassword;
+	private JMenuItem mntmRemovePassword;
+	private JMenuItem mntmSetPassword;
 	private JMenuItem mntmCustomize;
+	
+	/* Help Menu */
+	private JMenu mnHelp;
 	private JMenuItem mntmHelp;
 	private JMenuItem mntmInfo;
-	private JMenu mnReport;
-	private JMenuItem mntmBug;
-	private JMenuItem mntmEmail;
 	private JMenuItem mntmHomepage;
+	private JMenuItem mntmUpdate;
 	
 	/**
 	 *  Content Pane
 	 */
 	private JTabbedPane contentPane;	// Content Pane
+	private JDatePanelImpl[] datepanels = new JDatePanelImpl[3];	// Date Panels
 	
 	/* 
 	 * Read Tab
@@ -210,9 +219,9 @@ public class MainView extends JFrame {
 		initEvent();
 		initRead();
 		initEdit();
+		//initLookAndFeel();
 		updateNewList();
 		testModule();
-		updateListByCalendarDays("2014-11");
 	}
 	
 	private void testModule(){
@@ -242,43 +251,63 @@ public class MainView extends JFrame {
 		menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 		
+		/* File Menu */
 		mnFile = new JMenu("File");
+		mnFile.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"file.png")));
 		menuBar.add(mnFile);
 		
 		mntmExport = new JMenuItem("Export");
+		mntmExport.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"export.png")));
 		mnFile.add(mntmExport);
 		
 		mntmExit = new JMenuItem("Exit");
+		mntmExit.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"exit.png")));
 		mnFile.add(mntmExit);
 		
+		/* Option Menu */
 		mnOption = new JMenu("Option");
+		mnOption.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"option.png")));
 		menuBar.add(mnOption);
 		
-		mntmSetting = new JMenuItem("Setting");
-		mnOption.add(mntmSetting);
+		mnSetting = new JMenu("SettingS");
+		mnSetting.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"settings.png")));
+		mnOption.add(mnSetting);
+		
+		mntmSetPassword = new JMenuItem("Set Password");
+		mntmSetPassword.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"setpw.png")));
+		mnSetting.add(mntmSetPassword);
+		
+		mntmChangePassword = new JMenuItem("Change Password");
+		mntmChangePassword.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"changepw.png")));
+		mnSetting.add(mntmChangePassword);
+		
+		mntmRemovePassword = new JMenuItem("Remove Password");
+		mntmRemovePassword.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"removepw.png")));
+		mnSetting.add(mntmRemovePassword);
 		
 		mntmCustomize = new JMenuItem("Customize");
+		mntmCustomize.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"customize.png")));
 		mnOption.add(mntmCustomize);
 		
+		/* Help Menu */
 		mnHelp = new JMenu("Help");
+		mnHelp.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"help.png")));
 		menuBar.add(mnHelp);
 		
 		mntmHelp = new JMenuItem("Help");
+		mntmHelp.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"help.png")));
 		mnHelp.add(mntmHelp);
 		
-		mnReport = new JMenu("Report");
-		mnHelp.add(mnReport);
-		
-		mntmBug = new JMenuItem("Bug");
-		mnReport.add(mntmBug);
-		
-		mntmEmail = new JMenuItem("Email");
-		mnReport.add(mntmEmail);
-		
 		mntmHomepage = new JMenuItem("Homepage");
+		mntmHomepage.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"homepage.png")));
 		mnHelp.add(mntmHomepage);
 		
+		mntmUpdate = new JMenuItem("Update");
+		mntmUpdate.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"update.png")));
+		mnHelp.add(mntmUpdate);
+		
 		mntmInfo = new JMenuItem("Info");
+		mntmInfo.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"info.png")));
 		mnHelp.add(mntmInfo);
 		
 		/**
@@ -297,7 +326,7 @@ public class MainView extends JFrame {
 		contentPane.addTab("Read", readPane);
 		contentPane.addTab("Edit", editPane);
 		contentPane.addTab("New", newPane);
-		contentPane.setUI(new AquaBarTabbedPaneUI());	// Custom Tab UI
+		//contentPane.setUI(new AquaBarTabbedPaneUI());	// Custom Tab UI
 		
 		/* 
 		 * Read Tab
@@ -486,7 +515,11 @@ public class MainView extends JFrame {
 		
 		datePanel = new JDatePanelImpl(model, this);	
 		datePicker = new JDatePickerImpl(datePanel);
-		datePanel.setPreferredSize(new java.awt.Dimension(200, 190));
+		
+		/* JDate Resize */
+		datePanel.setPreferredSize(new java.awt.Dimension(200, 200));
+		newDatePanel.setPreferredSize(new java.awt.Dimension(200, 200));
+		editDatePanel.setPreferredSize(new java.awt.Dimension(200, 200));
 		 
 		calPanel.add(datePicker);
 		
@@ -700,6 +733,25 @@ public class MainView extends JFrame {
 		this.addWindowListener(new WindowEventHandler());	// Exit Diary
 		
 		/*
+		 * Menu Event Listener
+		 */
+		/* File Menu */
+		mntmExport.addActionListener(new mntmExportAction());
+		mntmExit.addActionListener(new mntmExitAction(this));
+		
+		/* Option Menu */
+		mntmChangePassword.addActionListener(new mntmChangePasswordAction());
+		mntmRemovePassword.addActionListener(new mntmRemovePasswordAction());
+		mntmSetPassword.addActionListener(new mntmSetPasswordAction());
+		mntmCustomize.addActionListener(new mntmCustomizeAction());
+		
+		/* Help Menu */
+		mntmHelp.addActionListener(new mntmHelpAction());
+		mntmInfo.addActionListener(new mntmInfoAction());
+		mntmHomepage.addActionListener(new mntmHomepageAction());
+		mntmUpdate.addActionListener(new mntmUpdateAction());
+		
+		/*
 		 * New Tab Event Listener
 		 */
 		/* Text Area */
@@ -758,6 +810,17 @@ public class MainView extends JFrame {
 		readListMenu.getOpenItem().addActionListener(new FileListOpenAction());	// List Right Click Open
 	}
 	
+	/* initSize() */
+	public void pack() {
+		super.pack();
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		setBounds(100,100,1350,750);
+		Dimension windowSize = this.getSize();
+		int windowX = Math.max(0, (screenSize.width  - windowSize.width ) / 2);
+		int windowY = Math.max(0, (screenSize.height - windowSize.height) / 2);
+		this.setLocation(windowX, windowY);
+	}
+	
 	/* Init Read */
 	private void initRead(){
 		vc.removeAllElements();
@@ -792,6 +855,15 @@ public class MainView extends JFrame {
 	    		editListModel.addElement(i);
 	    	}
     	}
+	}
+	
+	/* Init Edit */
+	private void initLookAndFeel(){
+		datepanels[0] = datePanel;
+		datepanels[1] = newDatePanel;
+		datepanels[2] = editDatePanel;
+		
+		LookAndFeelUtil.lookAndFeel(LookAndFeelUtil.lookAndFeelNumber(ControlData.getLookAndFeel()), datepanels, this);
 	}
 	
 	/* Update New List */
@@ -1691,4 +1763,210 @@ public class MainView extends JFrame {
 			updateNewList();
 		}
 	}
+	
+	/* Exit Menu Event Listener */
+	class mntmExitAction implements ActionListener{
+		JFrame frm;
+		
+		mntmExitAction(JFrame frm){
+			this.frm=frm;
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == mntmExit ) 
+			{
+				Utils.exitDiary();
+				frm.dispose();
+				System.exit(0);
+			}
+		}
+	}
+
+	/* Export Menu Event Listener */
+	class mntmExportAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO 자동 생성된 메소드 스텁
+			
+		}	
+	}
+	
+	/* SetPassword Menu Event Listener */
+	class mntmSetPasswordAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if(!ControlData.isLock()){	
+				String pw;
+				String rpw;
+				
+				do {
+					do{
+						pw = JOptionPane.showInputDialog("Enter password.");
+						if(pw==null){
+							return;
+						}
+					}while(pw.equals(""));				
+					do{
+						rpw= JOptionPane.showInputDialog("Re-enter password.");
+						if(rpw==null){
+							return;
+						}
+					}while(rpw.equals(""));				
+				}while (!pw.equals(rpw));
+				
+				int ret = ControlData.updatePw(pw);
+				
+				if(ret != 0)
+					JOptionPane.showMessageDialog(null, "Setting password is success.","Information",JOptionPane.INFORMATION_MESSAGE);
+				else
+					JOptionPane.showMessageDialog(null, "Setting password is fail.","Warning",JOptionPane.WARNING_MESSAGE);
+			}
+			else {			
+				JOptionPane.showMessageDialog(null, "You already set your password.","Warning",JOptionPane.WARNING_MESSAGE);
+			}	
+		}		
+	}
+	
+	/* ChangePassword Menu Event Listener */
+	class mntmChangePasswordAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if(!ControlData.isLock()){	
+				String pw;
+				String rpw;
+				
+				do {
+					do{
+						pw = JOptionPane.showInputDialog("Enter password.");
+						if(pw==null){
+							return;
+						}
+					}while(pw.equals(""));				
+					do{
+						rpw= JOptionPane.showInputDialog("Re-enter password.");
+						if(rpw==null){
+							return;
+						}
+					}while(rpw.equals(""));				
+				}while (!pw.equals(rpw));
+				
+				int ret = ControlData.updatePw(pw);
+				
+				if(ret != 0)
+					JOptionPane.showMessageDialog(null, "Setting password is success.","Information",JOptionPane.INFORMATION_MESSAGE);
+				else
+					JOptionPane.showMessageDialog(null, "Setting password is fail.","Warning",JOptionPane.WARNING_MESSAGE);
+			}
+			else {			
+				String pw;
+				String rpw;
+				do{
+					pw = JOptionPane.showInputDialog("Enter current password.");				
+					if(pw == null) return;
+				}while(!ControlData.checkPw(pw));
+				
+				do {
+					do{
+						pw = JOptionPane.showInputDialog("Enter changed password.");
+						if(pw==null){
+							return;
+						}
+					}while(pw.equals(""));				
+					do{
+						rpw= JOptionPane.showInputDialog("Re-enter changed password.");
+						if(rpw==null){
+							return;
+						}
+					}while(rpw.equals(""));				
+				}while (!pw.equals(rpw));
+				
+				int ret = ControlData.updatePw(pw);
+				
+				if(ret != 0)
+					JOptionPane.showMessageDialog(null, "Chaging password is success.","Information",JOptionPane.INFORMATION_MESSAGE);
+				else
+					JOptionPane.showMessageDialog(null, "Chaging password is fail.","Warning",JOptionPane.WARNING_MESSAGE);
+			}
+		}		
+	}
+	
+	/* RemovePassword Menu Event Listener */
+	class mntmRemovePasswordAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if(!ControlData.isLock()){	
+				JOptionPane.showMessageDialog(null, "You didn't set password.","Warning",JOptionPane.WARNING_MESSAGE);
+			}
+			else {			
+				String pw;
+				do{
+					pw = JOptionPane.showInputDialog("Enter current password.");				
+					if(pw == null) return;
+				}while(!ControlData.checkPw(pw));
+				
+				int ret = ControlData.removePw();
+				
+				if(ret != 0)
+					JOptionPane.showMessageDialog(null, "Removing password is success.","Information",JOptionPane.INFORMATION_MESSAGE);
+				else
+					JOptionPane.showMessageDialog(null, "Removing password is fail.","Warning",JOptionPane.WARNING_MESSAGE);
+			}
+		}		
+	}
+	
+	/* Customize Menu Event Listener */
+	class mntmCustomizeAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO 자동 생성된 메소드 스텁
+			
+		}		
+	}
+	
+	/* Help Menu Event Listener */
+	class mntmHelpAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO 자동 생성된 메소드 스텁
+			
+		}		
+	}
+	
+	/* Info Menu Event Listener */
+	class mntmInfoAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO 자동 생성된 메소드 스텁
+			
+		}		
+	}
+	
+	/* Homepage Menu Event Listener */
+	class mntmHomepageAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			OpenBrowser.openURL("http://devgrus.net/%EC%86%8C%EA%B7%9C%EB%AA%A8-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-java-diary/");
+			
+		}	
+	}
+
+	/* Homepage Menu Event Listener */
+	class mntmUpdateAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			OpenBrowser.openURL("https://github.com/egaoneko/Diary");	
+		}
+		
+	}
+
 }
