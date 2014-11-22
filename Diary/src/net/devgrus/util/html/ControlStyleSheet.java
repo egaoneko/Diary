@@ -1,13 +1,19 @@
 package net.devgrus.util.html;
 
+import java.util.Enumeration;
+
+import javax.swing.text.AttributeSet;
+import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
+
+import net.devgrus.util.ControlData;
 
 /**
  * Created by SeoDong on 2014-10-31.
  */
 public class ControlStyleSheet {
 	
-	private static String[] basicStyle={
+	public static String[] basicStyle={
 		"body {font-size: 18px; font-family: '³ª´® °íµñ','Nanum Gothic','¸¼Àº °íµñ','Malgun Gothic','µ¸¿ò','Dotum','±¼¸²','Gulim', Times New Roman, Times, serif;}",
 		"a {text-decoration: none; color: #28A9FF;}",
 		"a:hover {color: #2087CC;}",
@@ -23,9 +29,28 @@ public class ControlStyleSheet {
 	};
 	
 	public static StyleSheet setStyleSheet(StyleSheet styleSheet){
-		for(int i=0 ; i < basicStyle.length ; i++ ){
-			styleSheet.addRule(basicStyle[i]);
+		
+		if(ControlData.getCustomize_css()==null || ControlData.getCustomize_css().equals("")){
+			for(int i=0 ; i < basicStyle.length ; i++ ){
+				styleSheet.addRule(basicStyle[i]);
+			}
+		}else {
+			String[] style = ControlData.getCustomize_css().replaceAll("\n", "").replaceAll(";}", ";}\n").split("\n");
+			for(int i=0 ; i < style.length ; i++ ){
+				styleSheet.addRule(style[i]);
+			}
 		}
+			
+		return styleSheet;
+	}
+	
+	public static StyleSheet setStyleSheet(StyleSheet styleSheet, String inputStyle){
+			
+		String[] style = inputStyle.replaceAll("\n", "").replaceAll(";}", ";}\n").split("\n");
+		for(int i=0 ; i < style.length ; i++ ){
+			styleSheet.addRule(style[i]);
+		}
+			
 		return styleSheet;
 	}
 	

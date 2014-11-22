@@ -4,11 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="C:/Workspace/Diary/Diary/src/lib/jdbc/sqlite-jdbc-3.8.7.jar"/>
 	<classpathentry kind="lib" path="C:/Workspace/Diary/Diary/src/lib/jdbc/mysql-connector-java-5.1.28-bin.jar"/>
-	<classpathentry kind="lib" path="C:/Workspace/Diary/Diary/src/lib/lookandfeel/idw-gpl.jar"/>
-	<classpathentry kind="lib" path="C:/Workspace/Diary/Diary/src/lib/lookandfeel/JTattoo.jar"/>
-	<classpathentry kind="lib" path="C:/Workspace/Diary/Diary/src/lib/lookandfeel/liquidlnf.jar"/>
-	<classpathentry kind="lib" path="C:/Workspace/Diary/Diary/src/lib/lookandfeel/napkinlaf-alpha001.jar"/>
-	<classpathentry kind="lib" path="C:/Workspace/Diary/Diary/src/lib/lookandfeel/quaqua.jar"/>
 	<classpathentry kind="lib" path="C:/Workspace/Diary/Diary/src/lib/lookandfeel/seaglasslookandfeel-0.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

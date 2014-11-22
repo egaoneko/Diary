@@ -214,7 +214,7 @@ public class MainView extends JFrame {
 	private DiaryContent testModule = new DiaryContent(testTitle, testDate, testContent, testTags, testFiles);
 	
 	public MainView() {
-		setTitle("Diary");
+		setTitle("Devgrus Diary");
 		init();
 		initEvent();
 		initRead();
@@ -257,6 +257,7 @@ public class MainView extends JFrame {
 		menuBar.add(mnFile);
 		
 		mntmExport = new JMenuItem("Export");
+		mntmExport.setEnabled(false);
 		mntmExport.setIcon(new ImageIcon(getClass().getResource(EnvironmentVariables.menuIconsPath+"export.png")));
 		mnFile.add(mntmExport);
 		
@@ -755,7 +756,7 @@ public class MainView extends JFrame {
 		 * New Tab Event Listener
 		 */
 		/* Text Area */
-		newBtnCancel.addActionListener(new BtnCancleAction());		// Cancel Button
+		newBtnCancel.addActionListener(new BtnCancelAction());		// Cancel Button
 		newBtnPreview.addActionListener(new BtnPreviewAction());		// Preview Button
 		newBtnSave.addActionListener(new BtnSaveAction());			// Save Button		
 		
@@ -772,7 +773,7 @@ public class MainView extends JFrame {
 		 * Edit Tab Event Listener
 		 */
 		/* Text Area */
-		editBtnCancel.addActionListener(new BtnCancleAction());		// Cancel Button
+		editBtnCancel.addActionListener(new BtnCancelAction());		// Cancel Button
 		editBtnPreview.addActionListener(new BtnPreviewAction());		// Preview Button
 		editBtnSave.addActionListener(new BtnSaveAction());			// Save Button	
 		
@@ -1319,7 +1320,7 @@ public class MainView extends JFrame {
 	}
 	
 	/* Cancel Button */
-	class BtnCancleAction implements ActionListener {
+	class BtnCancelAction implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -1924,8 +1925,7 @@ public class MainView extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// TODO 자동 생성된 메소드 스텁
-			
+			Customize custo = new Customize();
 		}		
 	}
 	
@@ -1934,8 +1934,7 @@ public class MainView extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// TODO 자동 생성된 메소드 스텁
-			
+			Help help = new Help();
 		}		
 	}
 	
@@ -1944,8 +1943,7 @@ public class MainView extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// TODO 자동 생성된 메소드 스텁
-			
+			Info info = new Info();
 		}		
 	}
 	

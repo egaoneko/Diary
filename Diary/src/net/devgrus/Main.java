@@ -17,7 +17,7 @@ public class Main {
 
 	public static void main(String[] args) {
 
-		LookAndFeelUtil.lookAndFeel(8);		
+		LookAndFeelUtil.lookAndFeel(3);			
 		login();
 	}
 	

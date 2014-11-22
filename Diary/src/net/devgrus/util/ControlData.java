@@ -71,7 +71,8 @@ public class ControlData {
             		+ "is_lock text not null,"
             		+ "password text,"
             		+ "lookandfeel text,"
-            		+ "customize text"
+            		+ "customize_css text,"
+            		+ "customize_html text"
             		+ ");");
         } catch(Exception e) { e.printStackTrace(); }
     }
@@ -1283,6 +1284,166 @@ public class ControlData {
 			
 			ResultSet rs = smt.executeQuery(sql);				
 			ret = Boolean.parseBoolean(rs.getString("is_lock"));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * Get Customize CSS
+	 * @return
+	 */
+	public static String getCustomize_css() {
+		String sql = "select customize_css from user";
+
+		String ret = "";
+
+		Connection conn = null;
+		Statement smt = null;
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			// create a database connection
+			conn = DriverManager.getConnection("jdbc:sqlite:"+DATABASE);
+			smt = conn.createStatement();
+			
+			ResultSet rs = smt.executeQuery(sql);				
+			ret = rs.getString("customize_css");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * Update Customize CSS
+	 * @return
+	 */
+	public static int updateCustomize_css(String customize) {
+		String sql = "select id from user";
+		String sql2 = "update user set customize_css = ? where id = ?";
+
+		int ret = 0;
+
+		Connection conn = null;
+		PreparedStatement psmt = null;
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			// create a database connection
+			conn = DriverManager.getConnection("jdbc:sqlite:"+DATABASE);
+
+			psmt = conn.prepareStatement(sql);
+			ResultSet rs = psmt.executeQuery();
+			ret = rs.getInt("id");	
+			
+			if(ret != 0){
+				psmt = conn.prepareStatement(sql2);
+				psmt.setString(1, customize);
+				psmt.setInt(2, ret);
+				ret = psmt.executeUpdate();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * Get Customize HTML
+	 * @return
+	 */
+	public static String getCustomize_html() {
+		String sql = "select customize_html from user";
+
+		String ret = "";
+
+		Connection conn = null;
+		Statement smt = null;
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			// create a database connection
+			conn = DriverManager.getConnection("jdbc:sqlite:"+DATABASE);
+			smt = conn.createStatement();
+			
+			ResultSet rs = smt.executeQuery(sql);				
+			ret = rs.getString("customize_html");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * Update Customize HTML
+	 * @return
+	 */
+	public static int updateCustomize_html(String customize_html) {
+		String sql = "select id from user";
+		String sql2 = "update user set customize_html = ? where id = ?";
+
+		int ret = 0;
+
+		Connection conn = null;
+		PreparedStatement psmt = null;
+
+		try {
+			Class.forName("org.sqlite.JDBC");
+			// create a database connection
+			conn = DriverManager.getConnection("jdbc:sqlite:"+DATABASE);
+
+			psmt = conn.prepareStatement(sql);
+			ResultSet rs = psmt.executeQuery();
+			ret = rs.getInt("id");	
+			
+			if(ret != 0){
+				psmt = conn.prepareStatement(sql2);
+				psmt.setString(1, customize_html);
+				psmt.setInt(2, ret);
+				ret = psmt.executeUpdate();
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {

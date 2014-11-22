@@ -4,109 +4,98 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
 
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
-import javax.swing.JScrollPane;
+import javax.swing.JList;
 import javax.swing.JTextPane;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.text.Document;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.StyleSheet;
-import javax.swing.text.html.parser.ParserDelegator;
-
-import net.devgrus.environment.EnvironmentVariables;
-import net.devgrus.util.OpenBrowser;
-import net.devgrus.util.html.ContentToHTML;
-import net.devgrus.util.html.ControlStyleSheet;
 
 import java.awt.BorderLayout;
+
+import javax.swing.JScrollPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.text.Document;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
+
+import net.devgrus.environment.EnvironmentVariables;
+import net.devgrus.environment.HelpVariables;
+import net.devgrus.util.html.ControlStyleSheet;
+
 /**
- * Created by SeoDong on 2014-11-09.
+ * Created by SeoDong on 2014-11-22.
  */
-public class Preview extends JFrame {
+public class Help extends JFrame{
+	
+	private JScrollPane listScrollPane;
+	private JList<String> list;
 	
 	private JScrollPane txtScrollPane;	// Text ScrollPane
 	private JTextPane txtArea;			// Text Pane
 	private HTMLEditorKit kit;			// HTML Editor
 	private StyleSheet styleSheet;		// Style Sheet for HTML
 	private Document doc;				// Document for HTML
-	
-	private DiaryContent content;
-	private String style = null;
-	
-	public Preview(DiaryContent content) {
-		this.content = content;
-		this.style = null;
+
+	Help(){
 		init();
 	}
 	
-	public Preview(DiaryContent content, String style) {
-		this.content = content;
-		this.style = style;
-		init();
-	}
-	
-	/**
-	 * Initialization Function
-	 */
 	private void init() {
 		/**
 		 * Main View UI ¼³Á¤
 		 */
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		setBounds(100,100,820,650);
+		setBounds(100,100,920,600);
 		Dimension windowSize = this.getSize();
 		int windowX = Math.max(0, (screenSize.width  - windowSize.width ) / 2);
 		int windowY = Math.max(0, (screenSize.height - windowSize.height) / 2);
 		this.setLocation(windowX, windowY);
 		
+		listScrollPane = new JScrollPane();
+		getContentPane().add(listScrollPane, BorderLayout.WEST);
+		list = new JList<>();
+		list.setListData(HelpVariables.helpListMenu);
+		list.setFont(new Font(EnvironmentVariables.defaultFont, Font.BOLD, 15));
+		listScrollPane.setViewportView(list);
+		list.addListSelectionListener(new listListSelection());
+		
 		/**
 		 * Text Area
 		 */
 		txtScrollPane = new JScrollPane();
+		getContentPane().add(txtScrollPane, BorderLayout.CENTER);
 		txtArea = new JTextPane();
 		txtArea.setFont(new Font(EnvironmentVariables.defaultFont, Font.BOLD, 15));
 		txtArea.setEditable(false);
 		kit = new HTMLEditorKit();	// Add HTMLEditor
 		txtArea.setEditorKit(kit);
 		txtScrollPane.setViewportView(txtArea);
-		getContentPane().add(txtScrollPane, BorderLayout.CENTER);
 		
 		/**
 		 * HTML & CSS
 		 */
 		/* add some styles to the html */
 		styleSheet = kit.getStyleSheet();
-				
-		if(style != null){
-			ControlStyleSheet.setStyleSheet(styleSheet, style);
-		}
-		else{
-			ControlStyleSheet.setStyleSheet(styleSheet);
-		}
+		
+		ControlStyleSheet.setStyleSheet(styleSheet);
 		
 		// create a document, set it on the jeditorpane, then add the html
 		doc = kit.createDefaultDocument();
 		txtArea.setDocument(doc);
 		txtArea.setContentType("text/html");
-		txtArea.setText(ContentToHTML.getContentToHTML(content));
-		
-		/* Add HyperLink */
-		txtArea.addHyperlinkListener(new HyperlinkListener() {
-            @Override
-            public void hyperlinkUpdate(HyperlinkEvent hle) {
-                if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType())) {
-                    try {
-                        OpenBrowser.openURL(hle.getURL().toURI().toString());
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            }
-		});
+		txtArea.setText(HelpVariables.helpListContent[0]);
 		setVisible(true);
 	}
+	
+	class listListSelection implements ListSelectionListener
+	{	
+		@Override
+		public void valueChanged(ListSelectionEvent e) {
+			if (e.getSource() == list ) 
+			{
+				txtArea.setText(HelpVariables.helpListContent[list.getSelectedIndex()]);
+			}
+		}
+	}
+	
 }

@@ -31,9 +31,6 @@ public class LookAndFeelUtil extends JFrame {
 		try {
 			UIManager.setLookAndFeel(EnvironmentVariables.lookandfeel[style][1]);
 			
-			if(style == 10){
-				UIManager.setLookAndFeel(EnvironmentVariables.lookandfeel[style+1][1]);
-			}
 		} catch (Exception e) {
 		    // If Nimbus is not available, you can set the GUI to another look and feel.
 		}
@@ -50,19 +47,9 @@ public class LookAndFeelUtil extends JFrame {
 	public static void lookAndFeel(int style, JDatePanelImpl[] panels) {
 		int len = 180;
 		
-		if(style == 1 || style == 6){
-			len = 190;
-		}
-		else if(style == 5 || style == 9){
-			len = 200;
-		}
-		
 		try {
 			UIManager.setLookAndFeel(EnvironmentVariables.lookandfeel[style][1]);
 			
-			if(style == 10){
-				UIManager.setLookAndFeel(EnvironmentVariables.lookandfeel[style+1][1]);
-			}
 		} catch (Exception e) {
 		    // If Nimbus is not available, you can set the GUI to another look and feel.
 		}
@@ -75,22 +62,8 @@ public class LookAndFeelUtil extends JFrame {
 	public static void lookAndFeel(int style, JDatePanelImpl[] panels, JFrame frame) {
 		int len = 180;
 		
-		if(style == 1 || style == 6){
-			len = 190;
-		}
-		else if(style == 5 || style == 9){
-			len = 200;
-		}
-		else if(style == 8 || style == 10){
-			len = 200;
-		}
-		
 		try {
 			UIManager.setLookAndFeel(EnvironmentVariables.lookandfeel[style][1]);
-			
-			if(style == 10){
-				UIManager.setLookAndFeel(EnvironmentVariables.lookandfeel[style+1][1]);
-			}
 			
 			SwingUtilities.updateComponentTreeUI(frame);
 			frame.pack();
@@ -106,54 +79,26 @@ public class LookAndFeelUtil extends JFrame {
 	public static void lookAndFeelDatePanel(int style, JDatePanelImpl[] panels) {
 		int len = 180;
 		
-		if(style == 1 || style == 6){
-			len = 190;
-		}
-		else if(style == 5 || style == 9){
-			len = 200;
-		}
-		
 		for(int i=0; i<panels.length; i++){
 			panels[i].setPreferredSize(new java.awt.Dimension(200, len));
 		}
 	}
 	
 	public static int lookAndFeelNumber(String style){
-		int ret = 1;
+		int ret = 3;
 		
 		switch(style){
-		case "Metal" :
+		case "Nimbus" :
 			ret = 0;
 			break;
-		case "Nimbus" :
+		case "Windows" :
 			ret = 1;
 			break;
-		case "CDE/Motif" :
+		case "Quaqua" :
 			ret = 2;
 			break;
-		case "Windows" :
-			ret = 3;
-			break;
-		case "Windows Classic" :
-			ret = 4;
-			break;
-		case "Quaqua" :
-			ret = 5;
-			break;
-		case "Liquid" :
-			ret = 6;
-			break;
-		case "InfoNode" :
-			ret = 7;
-			break;
 		case "Sea Glass" :
-			ret = 8;
-			break;
-		case "Napkin Laf" :
-			ret = 9;
-			break;
-		case "JTattoo" :
-			ret = 10;
+			ret = 3;
 			break;
 		}
 		return ret;
