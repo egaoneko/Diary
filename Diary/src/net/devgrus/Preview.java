@@ -53,7 +53,7 @@ public class Preview extends JFrame {
 	 */
 	private void init() {
 		/**
-		 * Main View UI ¼³Á¤
+		 * Preview View UI
 		 */
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();

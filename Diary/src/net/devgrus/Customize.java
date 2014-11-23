@@ -80,7 +80,7 @@ public class Customize extends JFrame {
 	
 	private void init() {
 		/**
-		 * Main View UI 설정
+		 * Customize View UI 설정
 		 */
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();

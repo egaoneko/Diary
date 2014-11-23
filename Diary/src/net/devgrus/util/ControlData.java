@@ -596,7 +596,7 @@ public class ControlData {
 	 * @return
 	 */
 	public static Vector<DiaryContent> getDiaryRead(Vector<DiaryContent> vc) {
-		String sql = "select * from diary order by date DESC Limit 100";
+		String sql = "select * from diary order by date DESC";
 
 		Connection conn = null;
 		Statement smt = null;

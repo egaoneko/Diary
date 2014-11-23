@@ -221,7 +221,7 @@ public class MainView extends JFrame {
 		initEdit();
 		//initLookAndFeel();
 		updateNewList();
-		testModule();
+		//testModule();
 	}
 	
 	private void testModule(){
@@ -235,7 +235,7 @@ public class MainView extends JFrame {
 	 */
 	private void init() {
 		/**
-		 * Main View UI ¼³Á¤
+		 * Main View UI
 		 */
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -790,6 +790,7 @@ public class MainView extends JFrame {
 		 * List Pane Event Listener
 		 */
 		list.addMouseListener(new ListMouse());	// List Mouse Listener
+		list.addKeyListener(new ListKey());		// List Key Listener
 		listMenu.getReadItem().addActionListener(new ListReadAction());	// List Right Click Read
 		listMenu.getNewItem().addActionListener(new ListNewAction());	// List Right Click New
 		listMenu.getEditItem().addActionListener(new ListEditAction());	// List Right Click Edit
@@ -1567,6 +1568,89 @@ public class MainView extends JFrame {
 		@Override
 		public void mouseReleased(MouseEvent e) {			
 	    }		
+	}
+	
+	/* List Key Listener */
+	class ListKey implements KeyListener {
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			if(e.getKeyCode() == KeyEvent.VK_UP){
+				JList<DiaryContent> source = (JList<DiaryContent>) e.getSource();
+	            ListModel<DiaryContent> m = source.getModel();
+	            int index = source.getSelectedIndex()-1;
+	            
+	            if (index > -1) {
+	            	readTxtArea.setText("");
+	            	readTxtArea.setText(ContentToHTML.getContentToHTML(m.getElementAt(index)));
+	            	readListModel.removeAllElements();
+	            	readVc.removeAllElements();
+	            	ControlData.getFileRead(readVc, m.getElementAt(index).getDiary_id(), m.getElementAt(index).getDate());
+	            	for( DiaryFile i : readVc){
+	            		readListModel.addElement(i);
+	            	}
+	            	
+	            	editTxtTitle.setText(m.getElementAt(index).getTitle());
+	    	    	editTxtArea.setText(m.getElementAt(index).getContent());
+	    	    	editTxtTag.setText(m.getElementAt(index).getTags2String());
+	    	    	editListModel.removeAllElements();
+	    	    	editVc.removeAllElements();
+	    	    	editModel.setDate(ControlDate.getdateForSettingCalender(m.getElementAt(index).getDate(),0)
+	    	    			, ControlDate.getdateForSettingCalender(m.getElementAt(index).getDate(),1)-1
+	    	    			, ControlDate.getdateForSettingCalender(m.getElementAt(index).getDate(),2));
+	    	    	editCurrentDate = m.getElementAt(index).getDate();
+	    	    	editDiary_Id = m.getElementAt(index).getDiary_id();
+	    	    	ControlData.getFileEdit(editVc, m.getElementAt(index).getDiary_id(), m.getElementAt(index).getDate());
+	    	    	for( DiaryFile i : editVc){
+	    	    		editListModel.addElement(i);
+	    	    	}
+	            }
+			}
+			else if(e.getKeyCode() == KeyEvent.VK_DOWN){
+				JList<DiaryContent> source = (JList<DiaryContent>) e.getSource();
+	            ListModel<DiaryContent> m = source.getModel();
+	            int index = source.getSelectedIndex()+1;
+	            
+	            if(index > m.getSize()-1){
+	            	return;
+	            }
+	            
+	            if (index > -1) {
+	            	readTxtArea.setText("");
+	            	readTxtArea.setText(ContentToHTML.getContentToHTML(m.getElementAt(index)));
+	            	readListModel.removeAllElements();
+	            	readVc.removeAllElements();
+	            	ControlData.getFileRead(readVc, m.getElementAt(index).getDiary_id(), m.getElementAt(index).getDate());
+	            	for( DiaryFile i : readVc){
+	            		readListModel.addElement(i);
+	            	}
+	            	
+	            	editTxtTitle.setText(m.getElementAt(index).getTitle());
+	    	    	editTxtArea.setText(m.getElementAt(index).getContent());
+	    	    	editTxtTag.setText(m.getElementAt(index).getTags2String());
+	    	    	editListModel.removeAllElements();
+	    	    	editVc.removeAllElements();
+	    	    	editModel.setDate(ControlDate.getdateForSettingCalender(m.getElementAt(index).getDate(),0)
+	    	    			, ControlDate.getdateForSettingCalender(m.getElementAt(index).getDate(),1)-1
+	    	    			, ControlDate.getdateForSettingCalender(m.getElementAt(index).getDate(),2));
+	    	    	editCurrentDate = m.getElementAt(index).getDate();
+	    	    	editDiary_Id = m.getElementAt(index).getDiary_id();
+	    	    	ControlData.getFileEdit(editVc, m.getElementAt(index).getDiary_id(), m.getElementAt(index).getDate());
+	    	    	for( DiaryFile i : editVc){
+	    	    		editListModel.addElement(i);
+	    	    	}
+	            }
+			}			
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {			
+		}
+
+		@Override
+		public void keyTyped(KeyEvent e) {			
+		}
+		
 	}
 	
 	/* Read Right Click Pop Up */

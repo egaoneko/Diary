@@ -41,7 +41,7 @@ public class Help extends JFrame{
 	
 	private void init() {
 		/**
-		 * Main View UI 설정
+		 * Help View UI 설정
 		 */
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
