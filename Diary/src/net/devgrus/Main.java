@@ -53,8 +53,11 @@ public class Main {
 				
 				ControlData.insertUser(pw, true);
 			}
-			else {
+			else if(ret == JOptionPane.NO_OPTION){
 				ControlData.insertUser(null, false);
+			}
+			else {
+				return;
 			}
 			
 			MainView frame = new MainView();
